@@ -227,7 +227,9 @@ export default function DashboardPage() {
         <div className="mb-4">
           <h2 className="font-serif text-[22px] text-ink">Spend by category</h2>
           <p className="mt-1 text-[13px] text-ink-muted">
-            Category breakdown coming soon — auto-categorization in progress
+            {categoryData.length > 0
+              ? 'Auto-categorized from your invoice lines'
+              : 'Auto-categorization runs on every approved invoice'}
           </p>
         </div>
         {categoryData.length === 0 ? (
