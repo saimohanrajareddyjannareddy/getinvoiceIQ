@@ -2,6 +2,7 @@ import { createHash } from 'crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { parseInvoiceBytes } from './parse-invoice'
 import { reviewFlagsFor } from './review-flags'
+import { loadCategoryMemory, applyCategoryMemory } from './category-memory'
 
 /*
  * WhatsApp intake core. One received file (photo or PDF) for one
@@ -151,6 +152,17 @@ export async function importWhatsappInvoice(
     .single()
   if (fileError || !fileRow) {
     return { outcome: 'error', message: fileError?.message ?? 'file save failed' }
+  }
+
+  // Per-supplier category memory (shared lib, same as uploads):
+  // repeat items inherit the category past approved invoices from
+  // this supplier were saved with.
+  const catMem = await loadCategoryMemory(sb, restaurantId)
+  if (catMem.size > 0) {
+    parsed.items = applyCategoryMemory(
+      { ...parsed, vendor: vendorName },
+      catMem
+    ).items
   }
 
   const flags = reviewFlagsFor(parsed)

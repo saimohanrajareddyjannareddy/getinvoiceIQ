@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
 import { Upload, FileText, CheckCircle, AlertCircle, Download, X, Store } from 'lucide-react'
 import { reviewFlagsFor } from '@/lib/review-flags'
+import { normKey, loadCategoryMemory, applyCategoryMemory } from '@/lib/category-memory'
 import ReceiptScanner from '@/components/ReceiptScanner'
 import { useActivity, type ActivityEntry } from '@/lib/activity'
 
@@ -41,12 +42,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   Other: 'bg-amber-100 text-amber-700',
 }
 
-/* Comparison key for supplier names: case/whitespace-insensitive. */
-function normKey(s: string): string {
-  return s.trim().toLowerCase().replace(/\s+/g, ' ')
-}
-
-/* reviewFlagsFor lives in lib/review-flags (shared with the email scanner). */
+/* reviewFlagsFor lives in lib/review-flags (shared with the email scanner).
+   normKey + the category-memory helpers live in lib/category-memory
+   (shared with the email scanner and the WhatsApp intake). */
 function downloadCSVTemplate() {
   const headers = ['item_name', 'display_name', 'category', 'quantity', 'purchase_unit', 'unit_price', 'total', 'invoice_date', 'invoice_number', 'vendor']
   const example = ['CHIX BRST BNLS', 'Chicken Breast Boneless', 'Protein', '40', 'lb', '3.49', '139.60', '2024-04-20', 'INV-001', 'Restaurant Depot']
@@ -110,34 +108,11 @@ export default function UploadPage() {
       })
       if (!cancelled) setVendorCanon(map)
 
-      // Category memory from the 60 most recent approved invoices.
-      const { data: recent } = await supabase
-        .from('invoice_headers')
-        .select('id, vendor')
-        .eq('restaurant_id', restaurantId)
-        .neq('review_status', 'needs_review')
-        .order('invoice_date', { ascending: false })
-        .limit(60)
-      if (recent && recent.length > 0) {
-        const vendorById = new Map(recent.map((h) => [h.id, h.vendor || '']))
-        const rank = new Map(recent.map((h, i) => [h.id, i]))
-        const { data: lines } = await supabase
-          .from('invoice_lines')
-          .select('header_id, item_name, category')
-          .in('header_id', recent.map((h) => h.id))
-        const mem = new Map<string, string>()
-        const ordered = [...(lines || [])].sort(
-          (a, b) => (rank.get(a.header_id) ?? 0) - (rank.get(b.header_id) ?? 0)
-        )
-        for (const l of ordered) {
-          if (!l.category || l.category === 'Other') continue
-          const v = normKey(vendorById.get(l.header_id) || '')
-          if (!v || v === 'unknown') continue
-          const key = `${v}|${normKey(l.item_name || '')}`
-          if (!mem.has(key)) mem.set(key, l.category)
-        }
-        if (!cancelled) setCategoryMemory(mem)
-      }
+      // Category memory from the 60 most recent approved invoices
+      // (shared lib — the email and WhatsApp intakes load the same
+      // memory, so every intake path categorizes alike).
+      const mem = await loadCategoryMemory(supabase, restaurantId)
+      if (!cancelled) setCategoryMemory(mem)
     })()
     return () => {
       cancelled = true
@@ -384,27 +359,6 @@ export default function UploadPage() {
           }
         : prev
     )
-  }
-
-  // Apply the per-supplier category memory to a fresh parse: any item
-  // this supplier has sold this restaurant before inherits the
-  // category it was saved with last time.
-  function applyCategoryMemory(p: ParsedInvoice, mem: Map<string, string>): ParsedInvoice {
-    if (mem.size === 0) return p
-    const vKey = normKey(p.vendor || '')
-    if (!vKey || vKey === 'unknown') return p
-    let changed = false
-    const items = p.items.map((it) => {
-      const remembered =
-        mem.get(`${vKey}|${normKey(it.item_name || '')}`) ||
-        mem.get(`${vKey}|${normKey(it.display_name || '')}`)
-      if (remembered && remembered !== 'Other' && remembered !== it.category) {
-        changed = true
-        return { ...it, category: remembered }
-      }
-      return it
-    })
-    return changed ? { ...p, items } : p
   }
 
   // Once per adopted parse, when the memory is available (it usually

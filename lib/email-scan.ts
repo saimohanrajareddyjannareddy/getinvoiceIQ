@@ -10,6 +10,7 @@ import {
 } from './gmail'
 import { parseInvoiceBytes } from './parse-invoice'
 import { reviewFlagsFor } from './review-flags'
+import { loadCategoryMemory, applyCategoryMemory } from './category-memory'
 
 /*
  * Email scanner core. For one restaurant with a connected mailbox:
@@ -320,6 +321,17 @@ export async function scanRestaurantMailbox(
         if (fileError || !fileRow) {
           result.errors.push(`${att.filename}: ${fileError?.message ?? 'file save failed'}`)
           continue
+        }
+
+        // Per-supplier category memory (shared lib, same as uploads):
+        // repeat items inherit the category past approved invoices
+        // from this supplier were saved with.
+        const catMem = await loadCategoryMemory(sb, restaurantId)
+        if (catMem.size > 0) {
+          parsed.items = applyCategoryMemory(
+            { ...parsed, vendor: vendorName },
+            catMem
+          ).items
         }
 
         const flags = reviewFlagsFor(parsed)
