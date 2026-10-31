@@ -91,7 +91,7 @@ function digitVariants(n: number): number[] {
 
 /*
  * Reconciliation repair: if the items don't add up to the stated
- * total, but a SINGLE digit confusion in ONE line explains the
+ * subtotal, but a SINGLE digit confusion in ONE line explains the
  * whole difference, apply it. The corrected unit price must carry
  * the same confused digit and still multiply out to the corrected
  * total (on paper slips the price and amount columns are the same
@@ -102,11 +102,16 @@ function digitVariants(n: number): number[] {
 function repairReconciliation(parsed: ParsedInvoice): void {
   const items = parsed.items || []
   if (items.length === 0) return
+  // The target is the SUBTOTAL — line items are pre-tax amounts, so
+  // they can only ever add up to the subtotal. (This used to aim at
+  // the tax-inclusive total, which sent the repair hunting for a
+  // digit fix to bridge the tax gap on every taxed invoice.) When
+  // the subtotal wasn't read, reconstruct it as total - tax.
   const target =
-    parsed.total ??
-    (parsed.subtotal != null && parsed.tax != null
-      ? parsed.subtotal + parsed.tax
-      : parsed.subtotal)
+    parsed.subtotal ??
+    (parsed.total != null && parsed.tax != null
+      ? parsed.total - parsed.tax
+      : parsed.total)
   if (target == null) return
   const sum = items.reduce((s, i) => s + (i.total || 0), 0)
   if (Math.abs(target - sum) <= 0.02) return
