@@ -24,6 +24,7 @@ import {
 import { useAuth } from '@/lib/auth'
 import { useRestaurant } from '@/lib/restaurant'
 import AddRestaurantButton from '@/components/AddRestaurantButton'
+import DeleteAccountBox from '@/components/DeleteAccountBox'
 import ReviewBadge from '@/components/ReviewBadge'
 import { ActivityProvider } from '@/lib/activity'
 import ActivityPanel from '@/components/ActivityPanel'
@@ -376,6 +377,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span className="font-medium text-ink-2">{session?.user?.email ?? 'this account'}</span>,
                 so give them that address.
               </p>
+
+              {/* Escape hatches: this screen is also where a wrong-account
+                  sign-in lands, and Settings (with account deletion) is
+                  gated until a restaurant exists — so sign-out and
+                  delete-account live here too. */}
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-ink/[0.08] pt-5 text-left">
+                <p className="text-[13px] text-ink-muted">
+                  Wrong account?{' '}
+                  <button
+                    type="button"
+                    onClick={signOut}
+                    className="font-medium text-ink-2 underline-offset-2 transition hover:underline"
+                  >
+                    Sign out
+                  </button>{' '}
+                  and use the other one.
+                </p>
+                <DeleteAccountBox email={session?.user?.email} />
+              </div>
             </div>
           </main>
         ) : !current ? (
