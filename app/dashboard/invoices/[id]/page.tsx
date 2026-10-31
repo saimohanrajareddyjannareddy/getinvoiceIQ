@@ -71,8 +71,8 @@ export default function InvoiceDetailPage() {
     })
   }, [id])
 
-  if (loading) return <div className="p-8 text-gray-400">Loading...</div>
-  if (!header) return <div className="p-8 text-gray-400">Invoice not found.</div>
+  if (loading) return <div className="p-8 text-ink-muted">Loading...</div>
+  if (!header) return <div className="p-8 text-ink-muted">Invoice not found.</div>
 
   // Permanent delete via the delete_invoice RPC (sql/015) — members
   // have no direct DELETE policy. The invoice_files row is kept as a
@@ -105,16 +105,16 @@ export default function InvoiceDetailPage() {
   return (
     <div className="p-8 print:p-4">
       <div className="flex items-center justify-between mb-6 print:hidden">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 text-sm transition">
+        <button onClick={() => router.back()} className="flex items-center gap-2 text-ink-3 hover:text-ink text-sm transition">
           <ArrowLeft size={14} /> Back to Invoices
         </button>
         <div className="flex items-center gap-2">
           <button onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition">
+            className="flex items-center gap-2 px-4 py-2 border border-ink/[0.12] bg-cream-surface rounded-[9px] text-sm text-ink-3 hover:bg-cream-surface-alt transition">
             <Printer size={14} /> Print / PDF
           </button>
           <button onClick={handleDelete} disabled={deleting}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-sm text-red-600 hover:bg-red-50 transition disabled:opacity-50">
+            className="flex items-center gap-2 px-4 py-2 bg-cream-surface border border-red-200 rounded-[9px] text-sm text-red-600 hover:bg-red-50 transition disabled:opacity-50">
             <Trash2 size={14} /> {deleting ? 'Deleting…' : 'Delete'}
           </button>
         </div>
@@ -126,14 +126,14 @@ export default function InvoiceDetailPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border p-6 mb-6 print:border-0 print:p-0 print:mb-4">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-6 mb-6 print:border-0 print:p-0 print:mb-4">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Invoice #{header.invoice_number}</h1>
-            <p className="text-gray-500 text-sm mt-1">{header.vendor} · {header.invoice_date}</p>
+            <h1 className="font-display text-[24px] font-extrabold tracking-[-0.5px] text-ink">Invoice #{header.invoice_number}</h1>
+            <p className="text-ink-muted text-sm mt-1">{header.vendor} · {header.invoice_date}</p>
           </div>
           <div className="text-right">
-            <div className="text-xs text-gray-400 uppercase tracking-wide">Invoice Total</div>
+            <div className="text-xs text-ink-muted uppercase tracking-wide">Invoice Total</div>
             <div className="text-3xl font-bold text-pop">${Number(header.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
             {credits.length > 0 && (
               <div className="text-sm text-red-500 mt-0.5">
@@ -144,16 +144,16 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border overflow-hidden print:border-0">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden print:border-0">
         {regular.length > 0 && (
           <>
-            <div className="px-5 py-3 border-b bg-gray-50">
-              <h2 className="font-semibold text-gray-700 text-sm">{regular.length} Line Items</h2>
+            <div className="px-5 py-3 border-b border-ink/[0.08] bg-cream-surface-alt">
+              <h2 className="font-semibold text-ink-2 text-sm">{regular.length} Line Items</h2>
             </div>
             <div className="hidden md:block print:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
             <table className="w-full text-sm">
               <thead className="border-b">
-                <tr className="text-gray-400 text-xs uppercase tracking-wide">
+                <tr className="text-ink-muted text-xs uppercase tracking-wide">
                   <th className="text-left px-5 py-3">Item</th>
                   <th className="text-left px-5 py-3">Category</th>
                   <th className="text-right px-5 py-3">Qty</th>
@@ -163,16 +163,16 @@ export default function InvoiceDetailPage() {
               </thead>
               <tbody>
                 {regular.map(line => (
-                  <tr key={line.id} className="border-b last:border-0 hover:bg-gray-50 print:hover:bg-white">
-                    <td className="px-5 py-3 font-medium text-gray-900">{line.display_name || line.item_name}</td>
+                  <tr key={line.id} className="border-b border-ink/[0.06] last:border-0 hover:bg-cream-surface-alt print:hover:bg-white">
+                    <td className="px-5 py-3 font-medium text-ink">{line.display_name || line.item_name}</td>
                     <td className="px-5 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${CATEGORY_COLORS[line.category] || CATEGORY_COLORS.Other}`}>
                         {line.category || 'Other'}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-right text-gray-600">{qtyLabel(line)}</td>
-                    <td className="px-5 py-3 text-right text-gray-600">{line.unit_price ? `$${Number(line.unit_price).toFixed(2)}` : '—'}</td>
-                    <td className="px-5 py-3 text-right font-semibold text-gray-900">${Number(line.total).toFixed(2)}</td>
+                    <td className="px-5 py-3 text-right text-ink-3">{qtyLabel(line)}</td>
+                    <td className="px-5 py-3 text-right font-mono text-ink-3">{line.unit_price ? `$${Number(line.unit_price).toFixed(2)}` : '—'}</td>
+                    <td className="px-5 py-3 text-right font-mono font-semibold text-ink">${Number(line.total).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -182,10 +182,10 @@ export default function InvoiceDetailPage() {
               {regular.map(line => (
                 <div key={line.id} className="px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="font-medium text-gray-900">{line.display_name || line.item_name}</span>
-                    <span className="font-semibold text-gray-900">${Number(line.total).toFixed(2)}</span>
+                    <span className="font-medium text-ink">{line.display_name || line.item_name}</span>
+                    <span className="font-mono font-semibold text-ink">${Number(line.total).toFixed(2)}</span>
                   </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
                     <span className={`px-2 py-0.5 rounded-full ${CATEGORY_COLORS[line.category] || CATEGORY_COLORS.Other}`}>
                       {line.category || 'Other'}
                     </span>

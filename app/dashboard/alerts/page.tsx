@@ -73,8 +73,8 @@ export default function AlertsPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Alerts</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1">Alerts</h1>
+      <p className="text-ink-muted text-sm mb-6">
         Supplier price moves of {threshold}% or more, latest purchase vs the one before it.
         An item needs at least two invoices before it can alert.
       </p>
@@ -82,30 +82,30 @@ export default function AlertsPage() {
       <div className="flex flex-wrap items-center gap-2 mb-6">
         {([['all', 'All moves'], ['up', '↑ Price increases'], ['down', '↓ Price drops']] as const).map(([val, label]) => (
           <button key={val} onClick={() => setFilter(val)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filter === val ? 'bg-pop text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filter === val ? 'bg-pop text-white' : 'border border-ink/[0.12] bg-cream-surface text-ink-3 hover:bg-cream-surface-alt'}`}>
             {label}
           </button>
         ))}
-        <span className="mx-1 hidden sm:inline text-gray-300">|</span>
+        <span className="mx-1 hidden sm:inline text-ink-muted">|</span>
         {([5, 10, 20] as const).map((t) => (
           <button key={t} onClick={() => setThreshold(t)}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${threshold === t ? 'bg-gray-800 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${threshold === t ? 'bg-ink text-cream' : 'border border-ink/[0.12] bg-cream-surface text-ink-3 hover:bg-cream-surface-alt'}`}>
             ≥{t}%
           </button>
         ))}
         {dismissedCount > 0 && (
           <button onClick={() => setShowDismissed((s) => !s)}
-            className="ml-auto text-sm text-gray-500 underline underline-offset-2 hover:text-gray-700">
+            className="ml-auto text-sm text-ink-muted underline underline-offset-2 hover:text-ink-2">
             {showDismissed ? 'Back to active alerts' : `Dismissed (${dismissedCount})`}
           </button>
         )}
       </div>
 
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
         <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full text-sm min-w-[720px]">
-            <thead className="bg-gray-50 border-b">
-              <tr className="text-gray-500 text-xs uppercase tracking-wide">
+            <thead className="bg-cream-surface-alt border-b border-ink/[0.08]">
+              <tr className="text-ink-muted text-xs uppercase tracking-wide">
                 <th className="text-left px-4 py-3">Item</th>
                 <th className="text-left px-4 py-3">Supplier</th>
                 <th className="text-right px-4 py-3">Previous</th>
@@ -117,36 +117,36 @@ export default function AlertsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-8 text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={7} className="text-center py-8 text-ink-muted">Loading...</td></tr>
               ) : visible.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-8 text-gray-400">
+                <tr><td colSpan={7} className="text-center py-8 text-ink-muted">
                   {showDismissed
                     ? 'No dismissed alerts at this threshold.'
                     : `No price moves of ${threshold}% or more — supplier prices are stable.`}
                 </td></tr>
               ) : visible.map((a) => (
-                <tr key={keyOf(a)} className="border-b last:border-0 hover:bg-gray-50">
+                <tr key={keyOf(a)} className="border-b border-ink/[0.06] last:border-0 hover:bg-cream-surface-alt">
                   <td className="px-4 py-3">
-                    <span className="font-medium text-gray-900">{a.display_name}</span>
+                    <span className="font-medium text-ink">{a.display_name}</span>
                     {Math.abs(a.change) >= 20 && (
                       <span className="ml-2 bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">Big move</span>
                     )}
-                    <span className="block text-xs text-gray-400">{a.category}</span>
+                    <span className="block text-xs text-ink-muted">{a.category}</span>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{a.vendor || '—'}</td>
-                  <td className="px-4 py-3 text-right text-gray-500">${a.previous.toFixed(2)}{a.unit}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-gray-900">${a.current.toFixed(2)}{a.unit}</td>
+                  <td className="px-4 py-3 text-ink-3">{a.vendor || '—'}</td>
+                  <td className="px-4 py-3 text-right font-mono text-ink-muted">${a.previous.toFixed(2)}{a.unit}</td>
+                  <td className="px-4 py-3 text-right font-mono font-semibold text-ink">${a.current.toFixed(2)}{a.unit}</td>
                   <td className="px-4 py-3 text-right">
                     <span className={`flex items-center justify-end gap-1 font-semibold ${a.change > 0 ? 'text-red-500' : 'text-green-500'}`}>
                       {a.change > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                       {a.change > 0 ? '+' : ''}{a.change.toFixed(1)}%
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{a.date}</td>
+                  <td className="px-4 py-3 text-ink-muted whitespace-nowrap">{a.date}</td>
                   <td className="px-4 py-3 text-right">
                     {showDismissed ? null : (
                       <button onClick={() => dismiss(a)} title="Dismiss this alert"
-                        className="text-gray-300 hover:text-gray-600 transition">
+                        className="text-ink-muted hover:text-ink-2 transition">
                         <X size={16} />
                       </button>
                     )}
@@ -159,7 +159,7 @@ export default function AlertsPage() {
       </div>
 
       {showDismissed && dismissedCount > 0 && (
-        <button onClick={restoreAll} className="mt-4 text-sm text-gray-500 underline underline-offset-2 hover:text-gray-700">
+        <button onClick={restoreAll} className="mt-4 text-sm text-ink-muted underline underline-offset-2 hover:text-ink-2">
           Restore all dismissed alerts
         </button>
       )}

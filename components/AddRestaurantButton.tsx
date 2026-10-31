@@ -46,34 +46,34 @@ export default function AddRestaurantButton() {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={close}
         >
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={submit}
-            className="bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-md p-6 space-y-4"
+            className="bg-cream-surface rounded-[14px] shadow-xl border border-ink/[0.1] w-full max-w-md p-6 space-y-4"
           >
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-lg font-semibold tracking-tight">
                   Add a new restaurant
                 </h2>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <p className="text-sm text-ink-muted mt-0.5">
                   You&apos;ll be added as the owner and can switch to it from the top bar.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={close}
-                className="text-gray-400 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100"
+                className="text-ink-muted hover:text-ink-2 p-1 rounded-md hover:bg-cream-surface-alt"
               >
                 <X size={16} />
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">
+              <label className="block text-xs font-medium text-ink-3 mb-1.5 uppercase tracking-wide">
                 Restaurant Name
               </label>
               <input
@@ -82,7 +82,7 @@ export default function AddRestaurantButton() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Turmeric STL — Westport"
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-400"
+                className="w-full bg-cream-surface border border-ink/[0.16] rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-terracotta"
               />
             </div>
 
@@ -96,7 +96,7 @@ export default function AddRestaurantButton() {
               <button
                 type="button"
                 onClick={close}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                className="px-4 py-2 bg-cream-surface border border-ink/[0.12] text-ink-2 rounded-lg text-sm font-medium hover:bg-cream-surface-alt transition"
               >
                 Cancel
               </button>

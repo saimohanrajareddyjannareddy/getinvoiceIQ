@@ -47,12 +47,12 @@ function EntryRow({ e, now, onDismiss }: { e: ActivityEntry; now: number; onDism
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <Icon size={12} className="text-gray-400 shrink-0" />
-          <span className="truncate text-sm font-medium text-gray-800">{e.title}</span>
+          <Icon size={12} className="text-ink-muted shrink-0" />
+          <span className="truncate text-sm font-medium text-ink">{e.title}</span>
         </div>
         <div
           className={`text-xs mt-0.5 ${
-            e.status === 'error' ? 'text-red-600' : e.status === 'done' ? 'text-green-700' : 'text-gray-500'
+            e.status === 'error' ? 'text-red-600' : e.status === 'done' ? 'text-green-700' : 'text-ink-muted'
           }`}
         >
           {e.status === 'running'
@@ -60,7 +60,7 @@ function EntryRow({ e, now, onDismiss }: { e: ActivityEntry; now: number; onDism
             : e.detail || (e.status === 'done' ? 'Done' : 'Failed')}
         </div>
         {e.status !== 'running' && (
-          <div className="text-[11px] text-gray-400 mt-0.5">
+          <div className="text-[11px] text-ink-muted mt-0.5">
             {new Date(e.finishedAt ?? e.startedAt).toLocaleTimeString([], {
               hour: 'numeric',
               minute: '2-digit',
@@ -73,7 +73,7 @@ function EntryRow({ e, now, onDismiss }: { e: ActivityEntry; now: number; onDism
   )
 
   return (
-    <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 last:border-0">
+    <div className="flex items-start gap-2.5 px-4 py-3 border-b border-ink/[0.06] last:border-0">
       {e.href && e.status !== 'running' ? (
         <Link href={e.href} className="flex items-start gap-2.5 min-w-0 flex-1 hover:opacity-80 transition">
           {body}
@@ -85,7 +85,7 @@ function EntryRow({ e, now, onDismiss }: { e: ActivityEntry; now: number; onDism
         <button
           onClick={onDismiss}
           title="Dismiss"
-          className="text-gray-300 hover:text-gray-500 transition shrink-0 mt-0.5"
+          className="text-ink-muted hover:text-ink-3 transition shrink-0 mt-0.5"
         >
           <X size={14} />
         </button>
@@ -115,7 +115,7 @@ export default function ActivityPanel() {
           top of the invoice TOTAL column). */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-2.5 text-white shadow-xl hover:bg-gray-800 transition"
+        className="fixed bottom-5 right-5 z-50 flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-2.5 text-cream shadow-xl hover:bg-black transition"
         title="Activity — uploads, scans and syncs"
       >
         <Activity size={15} className={runningCount > 0 ? 'animate-pulse text-amber-400' : ''} />
@@ -130,28 +130,28 @@ export default function ActivityPanel() {
       {open && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setOpen(false)} />
-          <div className="fixed right-0 top-0 z-50 flex h-full w-[330px] max-w-[88vw] flex-col bg-white shadow-2xl">
+          <div className="fixed right-0 top-0 z-50 flex h-full w-[330px] max-w-[88vw] flex-col bg-cream-surface shadow-2xl">
             <div className="flex items-center gap-2 border-b px-4 py-3.5">
               <Activity size={16} className="text-pop" />
-              <span className="flex-1 text-sm font-semibold text-gray-900">Activity</span>
+              <span className="flex-1 text-sm font-semibold text-ink">Activity</span>
               {finishedCount > 0 && (
                 <button
                   onClick={clearFinished}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition"
+                  className="text-xs text-ink-muted hover:text-ink-2 transition"
                 >
                   Clear finished
                 </button>
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-ink-muted hover:text-ink-2 transition"
               >
                 <X size={16} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {entries.length === 0 ? (
-                <div className="px-4 py-10 text-center text-sm text-gray-400">
+                <div className="px-4 py-10 text-center text-sm text-ink-muted">
                   Nothing yet. Uploads, email scans and Clover syncs will show up here —
                   start one and feel free to wander off; this panel keeps watch.
                 </div>
@@ -162,7 +162,7 @@ export default function ActivityPanel() {
               )}
             </div>
             {runningCount > 0 && (
-              <div className="border-t px-4 py-2.5 text-xs text-gray-500">
+              <div className="border-t border-ink/[0.08] px-4 py-2.5 text-xs text-ink-muted">
                 {runningCount} process{runningCount === 1 ? '' : 'es'} running — safe to
                 navigate anywhere; results will be here.
               </div>

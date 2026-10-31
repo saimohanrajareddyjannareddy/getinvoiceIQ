@@ -179,18 +179,18 @@ export default function AutomationPage() {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink flex items-center gap-2">
             <Activity size={22} className="text-pop" />
             AI Automation
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-ink-muted text-sm">
             Pipeline health across vendor portals, email, and uploads.
           </p>
         </div>
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-white border rounded-lg hover:bg-gray-50 text-gray-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-3 py-2 text-sm border border-ink/[0.12] bg-cream-surface rounded-[9px] hover:bg-cream-surface-alt text-ink-2 disabled:opacity-50"
         >
           <RefreshCcw size={14} /> Refresh
         </button>
@@ -210,7 +210,7 @@ export default function AutomationPage() {
           sub="last 7 days"
         />
         <Kpi
-          icon={<Clock size={16} className="text-blue-500" />}
+          icon={<Clock size={16} className="text-pop" />}
           label="In flight"
           value={inFlight.toString()}
           sub={`${countsByStatus.pending} queued · ${countsByStatus.processing} parsing`}
@@ -239,7 +239,7 @@ export default function AutomationPage() {
           <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="text-gray-400 text-xs border-b">
+              <tr className="text-ink-muted text-xs border-b border-ink/[0.08]">
                 <th className="text-left pb-2">Vendor</th>
                 <th className="text-left pb-2">Source</th>
                 <th className="text-left pb-2">Last file</th>
@@ -249,14 +249,14 @@ export default function AutomationPage() {
             <tbody>
               {vendorFreshness.map((v) => (
                 <tr key={v.vendor_id ?? v.vendor_name} className="border-b last:border-0">
-                  <td className="py-2 text-gray-800">{v.vendor_name}</td>
-                  <td className="py-2 text-gray-600 capitalize">{v.ingestion_method}</td>
+                  <td className="py-2 text-ink">{v.vendor_name}</td>
+                  <td className="py-2 text-ink-3 capitalize">{v.ingestion_method}</td>
                   <td className="py-2 text-gray-600">
                     {v.last_seen ? v.last_seen.slice(0, 10) : '—'}
                   </td>
                   <td className="py-2 text-right">
                     {v.days_since == null ? (
-                      <span className="text-gray-400">never</span>
+                      <span className="text-ink-muted">never</span>
                     ) : (
                       <span
                         className={
@@ -286,7 +286,7 @@ export default function AutomationPage() {
           <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="text-gray-400 text-xs border-b">
+              <tr className="text-ink-muted text-xs border-b border-ink/[0.08]">
                 <th className="text-left pb-2">When</th>
                 <th className="text-left pb-2">Vendor</th>
                 <th className="text-left pb-2">Source</th>
@@ -298,13 +298,13 @@ export default function AutomationPage() {
             <tbody>
               {failures.map((f) => (
                 <tr key={f.id} className="border-b last:border-0">
-                  <td className="py-2 text-gray-600">{f.uploaded_at.slice(0, 10)}</td>
-                  <td className="py-2 text-gray-800">{f.vendor_name ?? '—'}</td>
-                  <td className="py-2 text-gray-600 capitalize">{f.source ?? '—'}</td>
-                  <td className="py-2 text-gray-600 truncate max-w-xs" title={f.error_message ?? ''}>
+                  <td className="py-2 text-ink-3">{f.uploaded_at.slice(0, 10)}</td>
+                  <td className="py-2 text-ink">{f.vendor_name ?? '—'}</td>
+                  <td className="py-2 text-ink-3 capitalize">{f.source ?? '—'}</td>
+                  <td className="py-2 text-ink-3 truncate max-w-xs" title={f.error_message ?? ''}>
                     {f.error_message ?? '—'}
                   </td>
-                  <td className="py-2 text-right text-gray-700">{f.retry_count ?? 0}</td>
+                  <td className="py-2 text-right text-ink-2">{f.retry_count ?? 0}</td>
                   <td className="py-2 text-right">
                     <span
                       className={`text-xs px-2 py-0.5 rounded ${
@@ -337,28 +337,28 @@ function Kpi({
   sub: string
 }) {
   return (
-    <div className="bg-white rounded-xl border p-5">
+    <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-5">
       <div className="flex items-center gap-2 mb-3">
         {icon}
-        <span className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</span>
       </div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-xs text-gray-400 mt-1">{sub}</div>
+      <div className="font-display text-2xl font-extrabold text-ink">{value}</div>
+      <div className="text-xs text-ink-muted mt-1">{sub}</div>
     </div>
   )
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl border p-5">
-      <h2 className="font-semibold text-gray-800 mb-4">{title}</h2>
+    <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-5">
+      <h2 className="font-serif text-[18px] text-ink mb-4">{title}</h2>
       {children}
     </div>
   )
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="text-sm text-gray-500 py-4">{children}</div>
+  return <div className="text-sm text-ink-muted py-4">{children}</div>
 }
 
 function SourceBars({ sources }: { sources: Record<Source, number> }) {
@@ -368,14 +368,14 @@ function SourceBars({ sources }: { sources: Record<Source, number> }) {
     <div className="space-y-2">
       {order.map((s) => (
         <div key={s} className="flex items-center gap-3">
-          <div className="text-xs text-gray-600 w-16 capitalize">{s}</div>
-          <div className="flex-1 bg-gray-100 rounded h-5 overflow-hidden">
+          <div className="text-xs text-ink-3 w-16 capitalize">{s}</div>
+          <div className="flex-1 bg-ink/[0.08] rounded h-5 overflow-hidden">
             <div
               className="bg-pop h-full"
               style={{ width: `${(sources[s] / max) * 100}%` }}
             />
           </div>
-          <div className="text-xs text-gray-700 w-10 text-right">{sources[s]}</div>
+          <div className="text-xs text-ink-2 w-10 text-right">{sources[s]}</div>
         </div>
       ))}
     </div>
@@ -387,8 +387,8 @@ function StatusBars({ statuses }: { statuses: Record<Status, number> }) {
   const order: Status[] = ['done', 'processing', 'pending', 'failed', 'dead']
   const colorByStatus: Record<Status, string> = {
     done: 'bg-green-500',
-    processing: 'bg-blue-500',
-    pending: 'bg-gray-400',
+    processing: 'bg-amber-500',
+    pending: 'bg-ink-muted',
     failed: 'bg-pop',
     dead: 'bg-red-500',
   }
@@ -396,14 +396,14 @@ function StatusBars({ statuses }: { statuses: Record<Status, number> }) {
     <div className="space-y-2">
       {order.map((s) => (
         <div key={s} className="flex items-center gap-3">
-          <div className="text-xs text-gray-600 w-20 capitalize">{s}</div>
-          <div className="flex-1 bg-gray-100 rounded h-5 overflow-hidden">
+          <div className="text-xs text-ink-3 w-20 capitalize">{s}</div>
+          <div className="flex-1 bg-ink/[0.08] rounded h-5 overflow-hidden">
             <div
               className={`${colorByStatus[s]} h-full`}
               style={{ width: `${(statuses[s] / max) * 100}%` }}
             />
           </div>
-          <div className="text-xs text-gray-700 w-10 text-right">{statuses[s]}</div>
+          <div className="text-xs text-ink-2 w-10 text-right">{statuses[s]}</div>
         </div>
       ))}
     </div>

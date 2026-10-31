@@ -100,21 +100,21 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
-      <div className="fixed right-0 top-0 z-50 flex h-full w-[390px] max-w-[92vw] flex-col bg-white shadow-2xl">
+      <div className="fixed right-0 top-0 z-50 flex h-full w-[390px] max-w-[92vw] flex-col bg-cream-surface shadow-2xl">
         <div className="flex items-center gap-2 border-b px-4 py-3.5">
           <Sparkles size={16} className="text-pop" />
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-gray-900">Ask InvoiceIQ</div>
-            <div className="truncate text-[11px] text-gray-400">
+            <div className="text-sm font-semibold text-ink">Ask InvoiceIQ</div>
+            <div className="truncate text-[11px] text-ink-muted">
               {current?.name} — answers from your invoices & sales
             </div>
           </div>
           {messages.length > 0 && (
-            <button onClick={() => persist([])} className="text-xs text-gray-400 transition hover:text-gray-600">
+            <button onClick={() => persist([])} className="text-xs text-ink-muted transition hover:text-ink-2">
               Clear
             </button>
           )}
-          <button onClick={onClose} className="text-gray-400 transition hover:text-gray-600">
+          <button onClick={onClose} className="text-ink-muted transition hover:text-ink-2">
             <X size={16} />
           </button>
         </div>
@@ -122,7 +122,7 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
           {messages.length === 0 ? (
             <div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-muted">
                 Ask me anything about this restaurant's purchases, prices, suppliers or sales. For example:
               </p>
               <div className="mt-3 flex flex-col gap-2">
@@ -130,7 +130,7 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-sm text-amber-800 transition hover:bg-amber-100"
+                    className="rounded-lg border border-pop/25 bg-pop/10 px-3 py-2 text-left text-sm text-ink transition hover:bg-pop/15"
                   >
                     {s}
                   </button>
@@ -144,15 +144,15 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
                   key={i}
                   className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     m.role === 'user'
-                      ? 'self-end bg-gray-900 text-white'
-                      : 'self-start bg-gray-100 text-gray-800'
+                      ? 'self-end bg-ink text-cream'
+                      : 'self-start bg-cream-surface-alt text-ink-2'
                   }`}
                 >
                   {m.content}
                 </div>
               ))}
               {sending && (
-                <div className="flex items-center gap-2 self-start px-1 text-sm text-gray-400">
+                <div className="flex items-center gap-2 self-start px-1 text-sm text-ink-muted">
                   <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
                   Checking your books…
                 </div>
@@ -172,12 +172,12 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your invoices…"
-            className="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-amber-400 focus:outline-none"
+            className="min-w-0 flex-1 rounded-lg border border-ink/[0.16] bg-cream-surface px-3 py-2.5 text-sm text-ink focus:border-terracotta focus:outline-none"
           />
           <button
             type="submit"
             disabled={sending || !input.trim()}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white transition hover:bg-gray-800 disabled:opacity-40"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-ink text-cream transition hover:bg-black disabled:opacity-40"
             title="Send"
           >
             <Send size={15} />

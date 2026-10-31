@@ -88,30 +88,30 @@ export default function VendorsPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Vendors</h1>
-      <p className="text-gray-500 text-sm mb-6">Every supplier you buy from, ranked by spend.</p>
+      <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1">Vendors</h1>
+      <p className="text-ink-muted text-sm mb-6">Every supplier you buy from, ranked by spend.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Suppliers</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{loading ? '—' : vendors.length}</div>
+        <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-5">
+          <div className="text-xs font-medium text-ink-muted uppercase tracking-wide">Suppliers</div>
+          <div className="font-display text-2xl font-extrabold text-ink mt-1">{loading ? '—' : vendors.length}</div>
         </div>
-        <div className="bg-white rounded-xl border p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Spend · last 30 days</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">{loading ? '—' : money(total30)}</div>
+        <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-5">
+          <div className="text-xs font-medium text-ink-muted uppercase tracking-wide">Spend · last 30 days</div>
+          <div className="font-display text-2xl font-extrabold text-ink mt-1">{loading ? '—' : money(total30)}</div>
         </div>
-        <div className="bg-white rounded-xl border p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Biggest supplier</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1 truncate">{loading ? '—' : topVendor ? topVendor.name : '—'}</div>
-          {topVendor && <div className="text-xs text-gray-400 mt-0.5">{money(topVendor.totalSpend)} all time</div>}
+        <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-5">
+          <div className="text-xs font-medium text-ink-muted uppercase tracking-wide">Biggest supplier</div>
+          <div className="font-display text-2xl font-extrabold text-ink mt-1 truncate">{loading ? '—' : topVendor ? topVendor.name : '—'}</div>
+          {topVendor && <div className="text-xs text-ink-muted mt-0.5">{money(topVendor.totalSpend)} all time</div>}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
         <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full text-sm min-w-[680px]">
-            <thead className="bg-gray-50 border-b">
-              <tr className="text-gray-500 text-xs uppercase tracking-wide">
+            <thead className="bg-cream-surface-alt border-b border-ink/[0.08]">
+              <tr className="text-ink-muted text-xs uppercase tracking-wide">
                 <th className="text-left px-4 py-3">Supplier</th>
                 <th className="text-right px-4 py-3">Invoices</th>
                 <th className="text-right px-4 py-3">Total spend</th>
@@ -122,34 +122,34 @@ export default function VendorsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="text-center py-8 text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={6} className="text-center py-8 text-ink-muted">Loading...</td></tr>
               ) : vendors.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-8 text-gray-400">No supplier invoices yet — upload or scan your first invoice and its supplier appears here.</td></tr>
+                <tr><td colSpan={6} className="text-center py-8 text-ink-muted">No supplier invoices yet — upload or scan your first invoice and its supplier appears here.</td></tr>
               ) : vendors.map((v) => (
                 <Fragment key={v.name}>
                   <tr onClick={() => setExpanded(expanded === v.name ? null : v.name)}
-                    className="border-b last:border-0 hover:bg-gray-50 cursor-pointer">
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                    className="border-b border-ink/[0.06] last:border-0 hover:bg-cream-surface-alt cursor-pointer">
+                    <td className="px-4 py-3 font-medium text-ink">
                       <span className="inline-flex items-center gap-1.5">
-                        {expanded === v.name ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400" />}
+                        {expanded === v.name ? <ChevronDown size={14} className="text-ink-muted" /> : <ChevronRight size={14} className="text-ink-muted" />}
                         {v.name}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-600">{v.count}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-gray-900">{money(v.totalSpend)}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{money(v.spend30d)}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">{money(v.avgInvoice)}</td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{v.lastDate}</td>
+                    <td className="px-4 py-3 text-right text-ink-3">{v.count}</td>
+                    <td className="px-4 py-3 text-right font-mono font-semibold text-ink">{money(v.totalSpend)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-ink-3">{money(v.spend30d)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-ink-3">{money(v.avgInvoice)}</td>
+                    <td className="px-4 py-3 text-ink-muted whitespace-nowrap">{v.lastDate}</td>
                   </tr>
                   {expanded === v.name && (
-                    <tr className="bg-gray-50/60 border-b">
+                    <tr className="bg-cream-surface-alt/60 border-b border-ink/[0.06]">
                       <td colSpan={6} className="px-6 py-3">
-                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Recent invoices</div>
+                        <div className="text-xs font-medium text-ink-muted uppercase tracking-wide mb-2">Recent invoices</div>
                         {v.recent.map((r) => (
                           <div key={r.id} className="flex items-center gap-4 py-1 text-sm">
-                            <span className="font-mono text-xs text-gray-400 w-24">{r.invoice_date}</span>
-                            <span className="font-mono text-xs text-gray-500">#{r.invoice_number}</span>
-                            <span className="ml-auto font-medium text-gray-800">{money(r.total || 0)}</span>
+                            <span className="font-mono text-xs text-ink-muted w-24">{r.invoice_date}</span>
+                            <span className="font-mono text-xs text-ink-muted">#{r.invoice_number}</span>
+                            <span className="ml-auto font-mono font-medium text-ink">{money(r.total || 0)}</span>
                           </div>
                         ))}
                       </td>

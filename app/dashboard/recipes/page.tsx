@@ -660,7 +660,7 @@ export default function RecipesPage() {
                                     next[i] = { ...next[i], ingredient_name: e.target.value }
                                     setEditLines(next)
                                   }}
-                                  className="min-w-[220px] flex-1 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 text-[13px] text-ink"
+                                  className="min-w-[220px] flex-1 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                                 >
                                   {canonical.map((c) => (
                                     <option key={c.id} value={c.name}>
@@ -676,7 +676,7 @@ export default function RecipesPage() {
                                     setEditLines(next)
                                   }}
                                   inputMode="decimal"
-                                  className="w-20 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 font-mono text-[13px] text-ink"
+                                  className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 font-mono text-[13px] text-ink"
                                 />
                                 <select
                                   value={row.unit}
@@ -685,7 +685,7 @@ export default function RecipesPage() {
                                     next[i] = { ...next[i], unit: e.target.value }
                                     setEditLines(next)
                                   }}
-                                  className="w-20 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 text-[13px] text-ink"
+                                  className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                                 >
                                   {RECIPE_UNITS.map((u) => (
                                     <option key={u} value={u}>
@@ -854,12 +854,12 @@ export default function RecipesPage() {
                             value={compYieldQty}
                             onChange={(e) => setCompYieldQty(e.target.value)}
                             inputMode="decimal"
-                            className="w-20 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 font-mono text-[13px] text-ink"
+                            className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 font-mono text-[13px] text-ink"
                           />
                           <select
                             value={compYieldUnit}
                             onChange={(e) => setCompYieldUnit(e.target.value)}
-                            className="w-20 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 text-[13px] text-ink"
+                            className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                           >
                             {RECIPE_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -892,7 +892,7 @@ export default function RecipesPage() {
                                     next[i] = { ...next[i], ingredient_name: e.target.value }
                                     setCompLines(next)
                                   }}
-                                  className="min-w-[220px] flex-1 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 text-[13px] text-ink"
+                                  className="min-w-[220px] flex-1 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                                 >
                                   {canonical.map((c) => (
                                     <option key={c.id} value={c.name}>
@@ -908,7 +908,7 @@ export default function RecipesPage() {
                                     setCompLines(next)
                                   }}
                                   inputMode="decimal"
-                                  className="w-20 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 font-mono text-[13px] text-ink"
+                                  className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 font-mono text-[13px] text-ink"
                                 />
                                 <select
                                   value={row.unit}
@@ -917,7 +917,7 @@ export default function RecipesPage() {
                                     next[i] = { ...next[i], unit: e.target.value }
                                     setCompLines(next)
                                   }}
-                                  className="w-20 rounded-[8px] border border-ink/15 bg-white px-2 py-1.5 text-[13px] text-ink"
+                                  className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                                 >
                                   {RECIPE_UNITS.map((u) => (
                                     <option key={u} value={u}>
@@ -979,7 +979,7 @@ export default function RecipesPage() {
               value={newCompName}
               onChange={(e) => setNewCompName(e.target.value)}
               placeholder="New component — e.g. garlic naan dough"
-              className="min-w-[240px] flex-1 rounded-[8px] border border-ink/15 bg-white px-3 py-2 text-[13px] text-ink"
+              className="min-w-[240px] flex-1 rounded-[8px] border border-ink/15 bg-cream-surface px-3 py-2 text-[13px] text-ink"
             />
             <button
               onClick={() => {

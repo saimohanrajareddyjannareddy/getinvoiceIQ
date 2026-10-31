@@ -108,11 +108,11 @@ export default function InvoicesPage() {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col items-start gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Invoices</h1>
-          <p className="text-gray-500 text-sm">All invoices — click to see line items.</p>
+          <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1">Invoices</h1>
+          <p className="text-ink-muted text-sm">All invoices — click to see line items.</p>
         </div>
         <button onClick={exportCSV}
-          className="flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2 bg-white border rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition">
+          className="flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-2 border border-ink/[0.12] bg-cream-surface rounded-[9px] text-sm text-ink-3 hover:bg-cream-surface-alt transition">
           <Download size={14} /> Export CSV
         </button>
       </div>
@@ -124,7 +124,7 @@ export default function InvoicesPage() {
             className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition ${
               vendorTab === v
                 ? 'bg-pop text-white'
-                : 'bg-white border text-gray-600 hover:bg-gray-50'
+                : 'border border-ink/[0.12] bg-cream-surface text-ink-3 hover:bg-cream-surface-alt'
             }`}>
             {v === ALL ? 'All vendors' : v}
           </button>
@@ -133,30 +133,30 @@ export default function InvoicesPage() {
 
       {/* Weekly / monthly totals for the current scope */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-white rounded-xl border p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Spend · last 7 days</div>
-          <div className="mt-1 text-2xl font-bold text-gray-900">{money(weekTotal)}</div>
-          <div className="mt-1 text-xs text-gray-400">{scopeLabel} · {weekCount} invoice{weekCount === 1 ? '' : 's'}</div>
+        <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-4">
+          <div className="text-xs text-ink-muted uppercase tracking-wide">Spend · last 7 days</div>
+          <div className="mt-1 font-display text-2xl font-extrabold text-ink">{money(weekTotal)}</div>
+          <div className="mt-1 text-xs text-ink-muted">{scopeLabel} · {weekCount} invoice{weekCount === 1 ? '' : 's'}</div>
         </div>
-        <div className="bg-white rounded-xl border p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Spend · last 30 days</div>
-          <div className="mt-1 text-2xl font-bold text-gray-900">{money(monthTotal)}</div>
-          <div className="mt-1 text-xs text-gray-400">{scopeLabel} · {monthCount} invoice{monthCount === 1 ? '' : 's'}</div>
+        <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-4">
+          <div className="text-xs text-ink-muted uppercase tracking-wide">Spend · last 30 days</div>
+          <div className="mt-1 font-display text-2xl font-extrabold text-ink">{money(monthTotal)}</div>
+          <div className="mt-1 text-xs text-ink-muted">{scopeLabel} · {monthCount} invoice{monthCount === 1 ? '' : 's'}</div>
         </div>
       </div>
 
       <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search by date, invoice #, or vendor..."
-          className="w-full border rounded-lg pl-9 pr-4 py-2 text-sm text-gray-700 focus:outline-none focus:border-pop" />
+          className="w-full border border-ink/[0.16] bg-cream-surface rounded-[9px] pl-9 pr-4 py-2 text-sm text-ink focus:outline-none focus:border-pop" />
       </div>
 
-      <div className="hidden md:block bg-white rounded-xl border overflow-hidden">
+      <div className="hidden md:block bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
         <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr className="text-gray-500 text-xs uppercase tracking-wide">
+          <thead className="bg-cream-surface-alt border-b border-ink/[0.08]">
+            <tr className="text-ink-muted text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3">Date</th>
               <th className="text-left px-4 py-3">Invoice #</th>
               <th className="text-left px-4 py-3">Vendor</th>
@@ -165,16 +165,16 @@ export default function InvoicesPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} className="text-center py-8 text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={4} className="text-center py-8 text-ink-muted">Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={4} className="text-center py-8 text-gray-400">No invoices for this vendor.</td></tr>
+              <tr><td colSpan={4} className="text-center py-8 text-ink-muted">No invoices for this vendor.</td></tr>
             ) : filtered.map(inv => (
               <tr key={inv.id} onClick={() => router.push(`/dashboard/invoices/${inv.id}`)}
-                className="border-b last:border-0 hover:bg-pop/5 cursor-pointer transition">
-                <td className="px-4 py-3 text-gray-600">{inv.invoice_date}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">#{inv.invoice_number}</td>
-                <td className="px-4 py-3 text-gray-600">{inv.vendor}</td>
-                <td className="px-4 py-3 text-right font-semibold text-gray-900">${Number(inv.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                className="border-b border-ink/[0.06] last:border-0 hover:bg-pop/5 cursor-pointer transition">
+                <td className="px-4 py-3 text-ink-3">{inv.invoice_date}</td>
+                <td className="px-4 py-3 font-mono font-medium text-ink">#{inv.invoice_number}</td>
+                <td className="px-4 py-3 text-ink-3">{inv.vendor}</td>
+                <td className="px-4 py-3 text-right font-mono font-semibold text-ink">${Number(inv.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
             ))}
           </tbody>
@@ -183,13 +183,13 @@ export default function InvoicesPage() {
       </div>
 
       {/* Mobile: tappable rows, vendor first */}
-      <div className="bg-white rounded-xl border overflow-hidden md:hidden">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden md:hidden">
         {loading ? (
-          <div className="py-8 text-center text-sm text-gray-400">Loading...</div>
+          <div className="py-8 text-center text-sm text-ink-muted">Loading...</div>
         ) : filtered.length === 0 ? (
-          <div className="py-8 text-center text-sm text-gray-400">No invoices for this vendor.</div>
+          <div className="py-8 text-center text-sm text-ink-muted">No invoices for this vendor.</div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-ink/[0.06]">
             {filtered.map(inv => (
               <button
                 key={inv.id}
@@ -197,12 +197,12 @@ export default function InvoicesPage() {
                 className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left active:bg-pop/5"
               >
                 <span className="min-w-0">
-                  <span className="block truncate font-medium text-gray-900">{inv.vendor}</span>
-                  <span className="mt-0.5 block text-xs text-gray-400">
+                  <span className="block truncate font-medium text-ink">{inv.vendor}</span>
+                  <span className="mt-0.5 block text-xs text-ink-muted">
                     {inv.invoice_date} · #{inv.invoice_number}
                   </span>
                 </span>
-                <span className="text-[15px] font-bold text-gray-900">
+                <span className="font-mono text-[15px] font-bold text-ink">
                   ${Number(inv.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </button>

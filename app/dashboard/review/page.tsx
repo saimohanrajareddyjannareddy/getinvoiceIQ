@@ -150,11 +150,11 @@ export default function ReviewPage() {
   return (
     <div className="p-4 sm:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+        <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1 flex items-center gap-2">
           <ClipboardCheck className="text-pop" /> Review Queue
         </h1>
-        <p className="text-gray-500 text-sm">
-          Uploads whose numbers don&apos;t add up — and <span className="font-medium text-gray-700">every invoice that arrives by email</span> —
+        <p className="text-ink-muted text-sm">
+          Uploads whose numbers don&apos;t add up — and <span className="font-medium text-ink-2">every invoice that arrives by email</span> —
           wait here. Approve the real supplier invoices; deny anything that isn&apos;t one.
         </p>
       </div>
@@ -171,7 +171,7 @@ export default function ReviewPage() {
           </div>
         </div>
       ) : loading ? (
-        <div className="border rounded-xl p-12 text-center text-gray-400 text-sm">Loading…</div>
+        <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-12 text-center text-ink-muted text-sm">Loading…</div>
       ) : rows.length === 0 ? (
         <div className="bg-green-50 border border-green-200 rounded-xl p-8 flex items-start gap-4">
           <CheckCircle size={24} className="text-green-500 mt-0.5 shrink-0" />
@@ -187,11 +187,11 @@ export default function ReviewPage() {
           {errorMsg && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-sm text-red-700">{errorMsg}</div>
           )}
-          <div className="hidden md:block bg-white rounded-xl border overflow-hidden">
+          <div className="hidden md:block bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
             <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr className="text-gray-400 text-xs uppercase tracking-wide">
+              <thead className="bg-cream-surface-alt border-b border-ink/[0.08]">
+                <tr className="text-ink-muted text-xs uppercase tracking-wide">
                   <th className="text-left px-4 py-3">Vendor</th>
                   <th className="text-left px-4 py-3">Date</th>
                   <th className="text-right px-4 py-3">Total</th>
@@ -201,7 +201,7 @@ export default function ReviewPage() {
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <tr key={r.id} className="border-b border-ink/[0.06] last:border-0 hover:bg-cream-surface-alt">
                     <td className="px-4 py-3">
                       {editingId === r.id ? (
                         <div className="flex items-center gap-1.5">
@@ -214,7 +214,7 @@ export default function ReviewPage() {
                               if (e.key === 'Escape') setEditingId(null)
                             }}
                             placeholder="Supplier name"
-                            className="w-36 rounded-lg border px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-pop"
+                            className="w-36 rounded-[9px] border border-ink/[0.16] bg-cream-surface px-2 py-1.5 text-sm text-ink outline-none focus:border-pop"
                           />
                           <button
                             onClick={() => saveName(r)}
@@ -225,7 +225,7 @@ export default function ReviewPage() {
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
-                            className="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700"
+                            className="px-2 py-1.5 text-xs text-ink-muted hover:text-ink-2"
                           >
                             Cancel
                           </button>
@@ -233,10 +233,10 @@ export default function ReviewPage() {
                       ) : (
                         <div className="flex items-center gap-2">
                           <div>
-                            <div className={`font-medium ${missingVendor(r.vendor) ? 'text-amber-700' : 'text-gray-900'}`}>
+                            <div className={`font-medium ${missingVendor(r.vendor) ? 'text-amber-700' : 'text-ink'}`}>
                               {missingVendor(r.vendor) ? 'Unknown' : r.vendor}
                             </div>
-                            {r.invoice_number && <div className="text-xs text-gray-400">#{r.invoice_number}</div>}
+                            {r.invoice_number && <div className="text-xs text-ink-muted">#{r.invoice_number}</div>}
                           </div>
                           <button
                             onClick={() => {
@@ -247,7 +247,7 @@ export default function ReviewPage() {
                             className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium transition ${
                               missingVendor(r.vendor)
                                 ? 'bg-pop text-white hover:bg-pop-hover'
-                                : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                                : 'text-ink-muted hover:bg-cream-surface-alt hover:text-ink-2'
                             }`}
                           >
                             <Pencil size={11} />
@@ -256,8 +256,8 @@ export default function ReviewPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{r.invoice_date || '—'}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                    <td className="px-4 py-3 text-ink-3">{r.invoice_date || '—'}</td>
+                    <td className="px-4 py-3 text-right font-mono font-semibold text-ink">
                       {r.total != null ? `$${r.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
                     </td>
                     <td className="px-4 py-3 text-amber-700">{r.review_reason || 'Flagged for review'}</td>
@@ -265,21 +265,21 @@ export default function ReviewPage() {
                       <div className="flex items-center justify-end gap-2">
                         <Link
                           href={`/dashboard/invoices/${r.id}`}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-white border rounded-lg text-xs text-gray-600 hover:bg-gray-50 transition"
+                          className="flex items-center gap-1 px-3 py-1.5 border border-ink/[0.12] bg-cream-surface rounded-[9px] text-xs text-ink-3 hover:bg-cream-surface-alt transition"
                         >
                           Inspect <ArrowRight size={12} />
                         </Link>
                         <button
                           onClick={() => deny(r.id)}
                           disabled={denyingId === r.id}
-                          className="px-3 py-1.5 bg-white border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 disabled:opacity-50 transition"
+                          className="px-3 py-1.5 bg-cream-surface border border-red-200 text-red-600 rounded-[9px] text-xs font-medium hover:bg-red-50 disabled:opacity-50 transition"
                         >
                           {denyingId === r.id ? 'Denying…' : 'Deny'}
                         </button>
                         <button
                           onClick={() => approve(r.id)}
                           disabled={approvingId === r.id}
-                          className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-50 transition"
+                          className="px-3 py-1.5 bg-pop text-white rounded-[9px] text-xs font-medium hover:bg-pop-hover disabled:opacity-50 transition"
                         >
                           {approvingId === r.id ? 'Approving…' : 'Approve'}
                         </button>
@@ -295,18 +295,18 @@ export default function ReviewPage() {
           {/* Mobile: stacked cards — no sideways table on a phone. */}
           <div className="space-y-3 md:hidden">
             {rows.map((r) => (
-              <div key={r.id} className="rounded-xl border bg-white p-4">
+              <div key={r.id} className="bg-cream-surface rounded-[14px] border border-ink/[0.08] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className={`font-semibold ${missingVendor(r.vendor) ? 'text-amber-700' : 'text-gray-900'}`}>
+                    <div className={`font-semibold ${missingVendor(r.vendor) ? 'text-amber-700' : 'text-ink'}`}>
                       {missingVendor(r.vendor) ? 'Unknown' : r.vendor}
                     </div>
-                    <div className="mt-0.5 text-xs text-gray-400">
+                    <div className="mt-0.5 text-xs text-ink-muted">
                       {r.invoice_date || 'No date'}
                       {r.invoice_number ? ` · #${r.invoice_number}` : ''}
                     </div>
                   </div>
-                  <div className="text-lg font-bold text-gray-900">
+                  <div className="font-mono text-lg font-bold text-ink">
                     {r.total != null ? `$${r.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
                   </div>
                 </div>
@@ -322,7 +322,7 @@ export default function ReviewPage() {
                         if (e.key === 'Escape') setEditingId(null)
                       }}
                       placeholder="Supplier name"
-                      className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm text-gray-900 outline-none focus:border-pop"
+                      className="min-w-0 flex-1 rounded-[9px] border border-ink/[0.16] bg-cream-surface px-3 py-2 text-sm text-ink outline-none focus:border-pop"
                     />
                     <button
                       onClick={() => saveName(r)}
@@ -331,7 +331,7 @@ export default function ReviewPage() {
                     >
                       {savingNameId === r.id ? 'Saving…' : 'Save'}
                     </button>
-                    <button onClick={() => setEditingId(null)} className="px-2 py-2 text-sm text-gray-500">
+                    <button onClick={() => setEditingId(null)} className="px-2 py-2 text-sm text-ink-muted">
                       Cancel
                     </button>
                   </div>
@@ -355,20 +355,20 @@ export default function ReviewPage() {
                   <button
                     onClick={() => approve(r.id)}
                     disabled={approvingId === r.id}
-                    className="flex-1 px-3 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition"
+                    className="flex-1 px-3 py-2.5 bg-pop text-white rounded-[9px] text-sm font-medium hover:bg-pop-hover disabled:opacity-50 transition"
                   >
                     {approvingId === r.id ? 'Approving…' : 'Approve'}
                   </button>
                   <button
                     onClick={() => deny(r.id)}
                     disabled={denyingId === r.id}
-                    className="px-3 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 transition"
+                    className="px-3 py-2.5 bg-cream-surface border border-red-200 text-red-600 rounded-[9px] text-sm font-medium hover:bg-red-50 disabled:opacity-50 transition"
                   >
                     {denyingId === r.id ? 'Denying…' : 'Deny'}
                   </button>
                   <Link
                     href={`/dashboard/invoices/${r.id}`}
-                    className="flex items-center gap-1 px-3 py-2.5 bg-white border rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition"
+                    className="flex items-center gap-1 px-3 py-2.5 border border-ink/[0.12] bg-cream-surface rounded-[9px] text-sm text-ink-3 hover:bg-cream-surface-alt transition"
                   >
                     Inspect <ArrowRight size={13} />
                   </Link>
