@@ -7,10 +7,14 @@ import { supabase } from '@/lib/supabase'
 /**
  * InvoiceIQ — OAuth return point.
  * Google sign-in lands here after Supabase. Depending on the project's flow
- * the session arrives as hash tokens (picked up by the Supabase client on
- * load) or as a one-time code to exchange. Either way, once a session
- * exists the user continues to the dashboard; if nothing materializes,
- * they go back to the sign-in page.
+ * the session arrives as a one-time code to exchange, as hash tokens the
+ * Supabase client absorbs on load, or as an already-stored session. We
+ * LISTEN for the session (auth state change) instead of polling on a
+ * short fuse: the old version gave up to /login after ~4s, and the
+ * session often landed a beat later — the AuthProvider then bounced
+ * the user from the login page to the dashboard, which looked like
+ * an error. Now the move happens the moment the session exists, and
+ * /login is only the fallback if nothing arrives within 8 seconds.
  */
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -19,15 +23,19 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     if (started.current) return
     started.current = true
-    let active = true
     let redirected = false
 
     const go = (path: string) => {
-      if (active && !redirected) {
+      if (!redirected) {
         redirected = true
         router.replace(path)
       }
     }
+
+    // Move the moment a session exists, however it arrives.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) go('/dashboard')
+    })
 
     ;(async () => {
       const code = new URL(window.location.href).searchParams.get('code')
@@ -43,22 +51,13 @@ export default function AuthCallbackPage() {
         go('/dashboard')
         return
       }
-      // Implicit-flow tokens can take a moment for the client to absorb.
-      const began = Date.now()
-      const timer = setInterval(async () => {
-        const { data: polled } = await supabase.auth.getSession()
-        if (polled.session) {
-          clearInterval(timer)
-          go('/dashboard')
-        } else if (Date.now() - began > 4000) {
-          clearInterval(timer)
-          go('/login')
-        }
-      }, 400)
+      // Hash-token absorption fires the listener above; only if no
+      // session materializes at all do we fall back to the sign-in page.
+      setTimeout(() => go('/login'), 8000)
     })()
 
     return () => {
-      active = false
+      sub.subscription.unsubscribe()
     }
   }, [router])
 

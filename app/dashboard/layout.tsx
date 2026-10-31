@@ -59,6 +59,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const { session, loading: authLoading, signOut } = useAuth()
   const { current, list, setCurrent, loading: restLoading } = useRestaurant()
+  // First-run state: signed in but no restaurant yet. The header's
+  // data actions (search, alerts, Ask, add invoice) are meaningless
+  // until a restaurant exists, so they hide and the welcome takes over.
+  const noRestaurant = !restLoading && list.length === 0
 
   // Time-of-day greeting is set after mount to avoid an SSR/client hydration
   // mismatch on the rendered hour.
@@ -277,6 +281,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Menu size={18} />
             </button>
             <div className="flex items-center gap-2 sm:gap-3">
+            {!noRestaurant && (<>
             <button
               type="button"
               aria-label="Search"
@@ -315,6 +320,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Label collapses to an icon-only button below md so the header row fits the viewport. */}
               <Plus size={16} strokeWidth={2.5} /><span className="hidden md:inline">Add invoice</span>
             </Link>
+            </>)}
             {/* Preserves the existing create-restaurant wiring (its own styling). */}
             <AddRestaurantButton />
             </div>
@@ -326,18 +332,50 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* If there are no restaurants yet (RLS returns 0), prompt to create one. */}
-        {!restLoading && list.length === 0 ? (
-          <main className="flex flex-1 items-center justify-center p-8">
-            <div className="max-w-md space-y-3 text-center">
-              <h2 className="font-display text-[24px] font-bold text-ink">No restaurants yet</h2>
-              <p className="text-sm text-ink-3">
-                You&apos;re signed in but not a member of any restaurant. Create one to get started,
-                or ask your admin for an invite.
+        {/* First-run welcome: signed in but not a member of any
+            restaurant. A proper onboarding card — what happens next in
+            three steps, one clear action, and the invite path with the
+            exact email the owner needs (wrong-account sign-ins land
+            here, so showing the address prevents a dead end). */}
+        {noRestaurant ? (
+          <main className="flex flex-1 items-center justify-center p-4 sm:p-8">
+            <div className="w-full max-w-[620px] rounded-[20px] border border-ink/[0.08] bg-cream-surface p-8 text-center shadow-[0_12px_40px_rgba(23,19,16,0.07)] md:p-10">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-pop">Getting started</div>
+              <h2 className="mt-3 font-display text-[30px] font-extrabold leading-tight tracking-[-0.5px] text-ink">
+                Create your first restaurant
+              </h2>
+              <p className="mx-auto mt-3 max-w-[440px] text-[15px] leading-relaxed text-ink-3">
+                This is where your invoices turn into numbers — spend, price
+                moves, and food cost. It starts with your restaurant, and
+                the name is all you need.
               </p>
-              <div className="pt-2">
+
+              <div className="mx-auto mt-8 grid max-w-[520px] gap-5 text-left sm:grid-cols-3">
+                {[
+                  ['1', 'Add your restaurant', 'Just its name. Ten seconds.'],
+                  ['2', 'Send invoices in', 'Photo, PDF, email forward, or WhatsApp.'],
+                  ['3', 'See your numbers', 'Spend, prices, and food cost, kept current.'],
+                ].map(([n, title, sub]) => (
+                  <div key={n} className="flex flex-col gap-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pop text-[12px] font-bold text-white">{n}</span>
+                    <div className="text-[14px] font-semibold text-ink">{title}</div>
+                    <div className="text-[13px] leading-snug text-ink-muted">{sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* The trigger button is this wrapper's direct child, so
+                  the size-up selectors can't reach the modal's buttons. */}
+              <div className="mt-9 flex justify-center [&>button]:rounded-[10px] [&>button]:px-5 [&>button]:py-2.5 [&>button]:text-[15px]">
                 <AddRestaurantButton />
               </div>
+
+              <p className="mt-6 text-[13px] leading-relaxed text-ink-muted">
+                Invited to an existing restaurant instead? The owner adds you
+                by email — you&apos;re signed in as{' '}
+                <span className="font-medium text-ink-2">{session?.user?.email ?? 'this account'}</span>,
+                so give them that address.
+              </p>
             </div>
           </main>
         ) : !current ? (
