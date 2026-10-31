@@ -62,23 +62,23 @@ export default function PriceTrackerPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Price Tracker</h1>
-      <p className="text-gray-500 text-sm mb-6">Track unit price changes across invoices for each item.</p>
+      <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1">Price Tracker</h1>
+      <p className="text-ink-muted text-sm mb-6">Track unit price changes across invoices for each item.</p>
 
       <div className="flex gap-2 mb-6">
         {([['all', 'All Items'], ['up', '↑ Price Increases'], ['down', '↓ Price Decreases']] as const).map(([val, label]) => (
           <button key={val} onClick={() => setFilter(val)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filter === val ? 'bg-pop text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>
+            className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition ${filter === val ? 'bg-ink text-cream' : 'border border-ink/[0.12] bg-cream-surface text-ink-3 hover:bg-cream-surface-alt'}`}>
             {label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
         <div className="hidden md:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr className="text-gray-500 text-xs uppercase tracking-wide">
+          <thead className="bg-cream-surface-alt border-b border-ink/[0.08]">
+            <tr className="text-ink-muted text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3">Item</th>
               <th className="text-left px-4 py-3">Category</th>
               <th className="text-right px-4 py-3">Previous</th>
@@ -89,20 +89,20 @@ export default function PriceTrackerPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={6} className="text-center py-8 text-ink-muted">Loading...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400">No price data available.</td></tr>
+              <tr><td colSpan={6} className="text-center py-8 text-ink-muted">No price data available.</td></tr>
             ) : filtered.map(item => (
-              <tr key={item.item_name} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{item.display_name}</td>
+              <tr key={item.item_name} className="border-b border-ink/[0.06] last:border-0 hover:bg-cream-surface-alt">
+                <td className="px-4 py-3 font-medium text-ink">{item.display_name}</td>
                 <td className="px-4 py-3">
-                  <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">{item.category}</span>
+                  <span className="bg-pop/10 text-pop text-xs px-2 py-0.5 rounded-full">{item.category}</span>
                 </td>
-                <td className="px-4 py-3 text-right text-gray-500">${item.previous.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right font-semibold text-gray-900">${item.current.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right text-gray-400 text-xs">{item.unit}</td>
+                <td className="px-4 py-3 text-right font-mono text-ink-3">${item.previous.toFixed(2)}</td>
+                <td className="px-4 py-3 text-right font-mono font-semibold text-ink">${item.current.toFixed(2)}</td>
+                <td className="px-4 py-3 text-right text-ink-muted text-xs">{item.unit}</td>
                 <td className="px-4 py-3 text-right">
-                  <span className={`flex items-center justify-end gap-1 font-semibold ${item.change > 0 ? 'text-red-500' : item.change < 0 ? 'text-green-500' : 'text-gray-400'}`}>
+                  <span className={`flex items-center justify-end gap-1 font-semibold ${item.change > 0 ? 'text-red-500' : item.change < 0 ? 'text-green-500' : 'text-ink-muted'}`}>
                     {item.change > 0 ? <TrendingUp size={14} /> : item.change < 0 ? <TrendingDown size={14} /> : <Minus size={14} />}
                     {item.change > 0 ? '+' : ''}{item.change.toFixed(1)}%
                   </span>
@@ -114,21 +114,21 @@ export default function PriceTrackerPage() {
         </div>
 
         {/* Mobile: one card per item, change up front */}
-        <div className="divide-y md:hidden">
+        <div className="divide-y divide-ink/[0.06] md:hidden">
           {loading ? (
-            <div className="py-8 text-center text-sm text-gray-400">Loading...</div>
+            <div className="py-8 text-center text-sm text-ink-muted">Loading...</div>
           ) : filtered.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-400">No price data available.</div>
+            <div className="py-8 text-center text-sm text-ink-muted">No price data available.</div>
           ) : filtered.map(item => (
             <div key={item.item_name} className="flex items-center justify-between gap-3 px-4 py-3.5">
               <div className="min-w-0">
-                <div className="truncate font-medium text-gray-900">{item.display_name}</div>
-                <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                  <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{item.category}</span>
-                  <span>${item.previous.toFixed(2)} → <span className="font-semibold text-gray-900">${item.current.toFixed(2)}</span> / {item.unit}</span>
+                <div className="truncate font-medium text-ink">{item.display_name}</div>
+                <div className="mt-1 flex items-center gap-2 text-xs text-ink-muted">
+                  <span className="bg-pop/10 text-pop px-2 py-0.5 rounded-full">{item.category}</span>
+                  <span>${item.previous.toFixed(2)} → <span className="font-semibold text-ink">${item.current.toFixed(2)}</span> / {item.unit}</span>
                 </div>
               </div>
-              <span className={`flex shrink-0 items-center gap-1 text-[15px] font-bold ${item.change > 0 ? 'text-red-500' : item.change < 0 ? 'text-green-500' : 'text-gray-400'}`}>
+              <span className={`flex shrink-0 items-center gap-1 text-[15px] font-bold ${item.change > 0 ? 'text-red-500' : item.change < 0 ? 'text-green-500' : 'text-ink-muted'}`}>
                 {item.change > 0 ? <TrendingUp size={16} /> : item.change < 0 ? <TrendingDown size={16} /> : <Minus size={16} />}
                 {item.change > 0 ? '+' : ''}{item.change.toFixed(1)}%
               </span>

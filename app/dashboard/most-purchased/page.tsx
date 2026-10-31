@@ -48,14 +48,14 @@ export default function MostPurchasedPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Most Purchased</h1>
-      <p className="text-gray-500 text-sm mb-6">Items ranked by total spend across all invoices.</p>
+      <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1">Most Purchased</h1>
+      <p className="text-ink-muted text-sm mb-6">Items ranked by total spend across all invoices.</p>
 
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
         <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <table className="w-full min-w-[600px] text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr className="text-gray-500 text-xs uppercase tracking-wide">
+          <thead className="bg-cream-surface-alt border-b border-ink/[0.08]">
+            <tr className="text-ink-muted text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3">#</th>
               <th className="text-left px-4 py-3">Item</th>
               <th className="text-left px-4 py-3">Category</th>
@@ -66,17 +66,17 @@ export default function MostPurchasedPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={6} className="text-center py-8 text-ink-muted">Loading...</td></tr>
             ) : items.map((item, i) => (
-              <tr key={item.item_name} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-400 font-mono">{i + 1}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{item.display_name}</td>
+              <tr key={item.item_name} className="border-b border-ink/[0.06] last:border-0 hover:bg-cream-surface-alt">
+                <td className="px-4 py-3 text-ink-muted font-mono">{i + 1}</td>
+                <td className="px-4 py-3 font-medium text-ink">{item.display_name}</td>
                 <td className="px-4 py-3">
-                  <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">{item.category}</span>
+                  <span className="bg-pop/10 text-pop text-xs px-2 py-0.5 rounded-full">{item.category}</span>
                 </td>
-                <td className="px-4 py-3 text-right text-gray-600">{item.times_ordered}x</td>
-                <td className="px-4 py-3 text-right text-gray-600">{item.total_qty}</td>
-                <td className="px-4 py-3 text-right font-semibold text-gray-900">${item.total_spend.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="px-4 py-3 text-right text-ink-3">{item.times_ordered}x</td>
+                <td className="px-4 py-3 text-right text-ink-3">{item.total_qty}</td>
+                <td className="px-4 py-3 text-right font-mono font-semibold text-ink">${item.total_spend.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
             ))}
           </tbody>
