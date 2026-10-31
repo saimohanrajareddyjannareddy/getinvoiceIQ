@@ -17,7 +17,7 @@ export default function PriceTrackerPage() {
   useEffect(() => {
     if (!restaurantId) return
     supabase.from('invoice_lines')
-      .select('item_name, display_name, category, unit_price, unit_qty, case_qty, invoice_headers!header_id(invoice_date)')
+      .select('item_name, display_name, category, unit_price, unit_qty, case_qty, invoice_headers!header_id(invoice_date, review_status)')
       .eq('restaurant_id', restaurantId)
       .not('unit_price', 'is', null)
       .gt('unit_price', 0)
@@ -27,6 +27,9 @@ export default function PriceTrackerPage() {
         const map: Record<string, { display_name: string; category: string; prices: PriceEntry[] }> = {}
         data.forEach((l: any) => {
           if (!l.item_name || !l.unit_price) return
+          // Skip invoices still in Review — same approved-only rule as
+          // Home/Invoices (unapproved prices must not move the tracker).
+          if (l.invoice_headers?.review_status === 'needs_review') return
           const date = l.invoice_headers?.invoice_date
           if (!date) return
           if (!map[l.item_name]) map[l.item_name] = { display_name: l.display_name || l.item_name, category: l.category || 'Other', prices: [] }

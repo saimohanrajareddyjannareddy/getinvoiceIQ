@@ -13,14 +13,26 @@ export default function MostPurchasedPage() {
 
   useEffect(() => {
     if (!restaurantId) return
-    supabase.from('invoice_lines').select('item_name, display_name, category, unit_qty, case_qty, total')
-      .eq('restaurant_id', restaurantId)
-      .gt('total', 0)
-      .limit(5000)
-      .then(({ data }) => {
-        if (!data) return
-        const map: Record<string, Item> = {}
-        data.forEach((l: any) => {
+    ;(async () => {
+      // Count only approved invoices — same rule as Home/Invoices:
+      // headers still in Review (needs_review) are excluded. review_status
+      // lives on invoice_headers, so build the approved id set first
+      // (identical JS predicate to Home, so NULL counts as approved).
+      const { data: headers } = await supabase
+        .from('invoice_headers').select('id, review_status')
+        .eq('restaurant_id', restaurantId)
+      const approvedIds = new Set(
+        (headers || []).filter((h: any) => h.review_status !== 'needs_review').map((h: any) => h.id)
+      )
+      const { data } = await supabase.from('invoice_lines').select('item_name, display_name, category, unit_qty, case_qty, total, header_id')
+        .eq('restaurant_id', restaurantId)
+        .gt('total', 0)
+        .limit(5000)
+      if (!data) { setLoading(false); return }
+      const map: Record<string, Item> = {}
+      data
+        .filter((l: any) => approvedIds.has(l.header_id))
+        .forEach((l: any) => {
           const key = l.item_name
           if (!key) return
           const label = l.display_name || l.item_name
@@ -29,9 +41,9 @@ export default function MostPurchasedPage() {
           map[key].total_spend += l.total || 0
           map[key].times_ordered += 1
         })
-        setItems(Object.values(map).sort((a, b) => b.total_spend - a.total_spend))
-        setLoading(false)
-      })
+      setItems(Object.values(map).sort((a, b) => b.total_spend - a.total_spend))
+      setLoading(false)
+    })()
   }, [restaurantId])
 
   return (

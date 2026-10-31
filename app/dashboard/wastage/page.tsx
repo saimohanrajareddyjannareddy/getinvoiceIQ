@@ -36,9 +36,12 @@ export default function WastagePage() {
         end = localDate(now)
       }
 
-      const [linesRes, salesRes] = await Promise.all([
-        supabase.from('invoice_lines').select('category, total').eq('restaurant_id', restaurantId).gte('invoice_date', start).lte('invoice_date', end).gt('total', 0),
+      const [linesRes, salesRes, headersRes] = await Promise.all([
+        supabase.from('invoice_lines').select('category, total, header_id').eq('restaurant_id', restaurantId).gte('invoice_date', start).lte('invoice_date', end).gt('total', 0),
         supabase.from('pos_sales').select('category, revenue').eq('restaurant_id', restaurantId).gte('sale_date', start).lte('sale_date', end),
+        // Purchased side counts only approved invoices — same rule as
+        // Home/Invoices: headers still in Review (needs_review) excluded.
+        supabase.from('invoice_headers').select('id, review_status').eq('restaurant_id', restaurantId).gte('invoice_date', start).lte('invoice_date', end),
       ])
 
       if (cancelled) return
@@ -46,8 +49,12 @@ export default function WastagePage() {
       const hasSales = !salesRes.error && salesRes.data && salesRes.data.length > 0
       setCloverConnected(hasSales || false)
 
+      const approvedIds = new Set(
+        (headersRes.data || []).filter((h: any) => h.review_status !== 'needs_review').map((h: any) => h.id)
+      )
       const purchaseMap: Record<string, number> = {}
       for (const l of linesRes.data || []) {
+        if (!approvedIds.has((l as any).header_id)) continue
         const cat = l.category || 'Other'
         purchaseMap[cat] = (purchaseMap[cat] || 0) + (l.total || 0)
       }
