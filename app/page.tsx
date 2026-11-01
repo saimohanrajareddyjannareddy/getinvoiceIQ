@@ -163,6 +163,23 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
+
+      {/* PROMO FILM — the 12-second product story. Its own art is the
+          same black/cream/pop world as this band, so it sits inside the
+          hero as a silent looping showcase under the headline block. */}
+      <div className="mx-auto max-w-[1240px] px-6 pb-[72px] md:px-10">
+        <video
+          className="w-full rounded-[20px] border border-white/10 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.65)]"
+          src="/invoiceiq-promo.mp4"
+          poster="/invoiceiq-promo-poster.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-label="InvoiceIQ in twelve seconds: snap a photo of any invoice, InvoiceIQ reads every line, and you know where every dollar goes."
+        />
+      </div>
       </div>
 
       {/* PILOT PROOF — real operating numbers, labelled as pilot results. */}
