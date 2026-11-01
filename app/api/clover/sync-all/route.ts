@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { syncRestaurantClover } from '@/lib/clover-sync'
+import { fetchGatedIds } from '@/lib/billing-gate'
 
 /*
  * Daily automatic Clover sync for every restaurant with a connected
@@ -50,9 +51,21 @@ async function run(req: NextRequest) {
     rows = wide.data
   }
 
+  // Trial gate: the daily sync skips restaurants whose trial
+  // ended without a card (lapsed-account freeze). Sales stay in
+  // Clover and sync again after subscribing.
+  const gated = await fetchGatedIds(
+    sb,
+    (rows ?? []).map((r) => r.restaurant_id as string)
+  )
+
   const summary: Array<Record<string, unknown>> = []
   for (const row of rows ?? []) {
     const restaurantId = row.restaurant_id as string
+    if (gated.has(restaurantId)) {
+      summary.push({ restaurant_id: restaurantId, skipped: 'trial_ended' })
+      continue
+    }
     try {
       const result = await syncRestaurantClover(sb, restaurantId)
       summary.push({ restaurant_id: restaurantId, ...result })

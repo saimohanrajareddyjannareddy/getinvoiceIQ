@@ -8,6 +8,7 @@ import {
   whatsappVerifyToken,
 } from '@/lib/whatsapp'
 import { importWhatsappInvoice } from '@/lib/whatsapp-intake'
+import { fetchTrialGated } from '@/lib/billing-gate'
 
 /*
  * WhatsApp intake webhook (Meta WhatsApp Business Platform).
@@ -133,6 +134,22 @@ async function processMessage(sb: SupabaseClient, msg: WaMessage) {
     await reply(
       from,
       "This number isn't registered with an getinvoiceIQ restaurant yet, so I can't file receipts from it. Ask the owner to add your number in getinvoiceIQ Settings → WhatsApp invoices."
+    )
+    return
+  }
+
+  // Trial gate: a restaurant whose trial ended without a card is
+  // frozen — the standard lapsed-account behavior — so intake
+  // pauses until the owner subscribes. The sender hears why in
+  // plain words instead of silence.
+  if (await fetchTrialGated(sb, restaurantId)) {
+    await setLog(sb, wamid, {
+      status: 'ignored',
+      detail: 'trial ended — intake paused',
+    })
+    await reply(
+      from,
+      "This restaurant's getinvoiceIQ free trial has ended, so receipt intake is paused. The owner can restart it in a minute by subscribing at getinvoiceiq.com — then just send the receipt again."
     )
     return
   }

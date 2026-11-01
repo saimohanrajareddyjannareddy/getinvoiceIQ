@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { fetchTrialGated } from '@/lib/billing-gate'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY!
@@ -50,6 +51,15 @@ export async function POST(req: NextRequest) {
   }
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+  // Trial gate: intake pauses for a restaurant whose trial ended
+  // without a card (the standard lapsed-account freeze). A 200
+  // with a skip marker, so callers don't retry — the original
+  // email stays in the owner's mailbox and can be re-sent after
+  // subscribing.
+  if (await fetchTrialGated(sb, restaurant_id)) {
+    return NextResponse.json({ inserted: 0, skipped: 0, gated: 'trial_ended' })
+  }
 
   // Resolve vendor_id from sender against vendor_aliases.sender_pattern.
   // Considers global aliases (restaurant_id IS NULL) + restaurant-scoped ones.

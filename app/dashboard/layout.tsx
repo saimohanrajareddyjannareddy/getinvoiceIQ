@@ -26,6 +26,7 @@ import { useRestaurant } from '@/lib/restaurant'
 import AddRestaurantButton from '@/components/AddRestaurantButton'
 import DeleteAccountBox from '@/components/DeleteAccountBox'
 import TrialGate from '@/components/TrialGate'
+import { isTrialGated, hasLiveSubscription, trialDaysLeft } from '@/lib/billing-gate'
 import ReviewBadge from '@/components/ReviewBadge'
 import { ActivityProvider } from '@/lib/activity'
 import ActivityPanel from '@/components/ActivityPanel'
@@ -68,18 +69,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Trial gate (Sai's billing model: no card during the trial,
   // never a charge before it ends — the card is asked for when the
-  // trial is over). A restaurant is gated when its trial date has
-  // passed and it has no live subscription: either it never
-  // subscribed (no Stripe id) or its subscription was cancelled
-  // (the id remains, the status gives it away — Stripe only flips
-  // to 'canceled' once the paid period has actually ended).
-  const hasLiveSub =
-    !!current?.stripe_subscription_id && current?.subscription_status !== 'canceled'
-  const trialExpired =
-    !!current &&
-    !hasLiveSub &&
-    !!current.trial_ends_at &&
-    new Date(current.trial_ends_at).getTime() < Date.now()
+  // trial is over). The rule itself lives in lib/billing-gate,
+  // shared with the server intake paths.
+  const trialExpired = current ? isTrialGated(current) : false
+
+  // Countdown warning over a live trial's last 3 days — apps warn
+  // before they stop, so the gate never ambushes an owner.
+  const daysLeft =
+    current && !hasLiveSubscription(current) ? trialDaysLeft(current) : null
+  const showTrialBanner =
+    !!current && !trialExpired && daysLeft !== null && daysLeft >= 0 && daysLeft <= 3
 
   // Time-of-day greeting is set after mount to avoid an SSR/client hydration
   // mismatch on the rendered hour.
@@ -348,6 +347,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {current && <p className="mt-1 truncate text-[13px] text-ink-muted">{current.name}</p>}
           </div>
         </header>
+
+        {/* Trial countdown — the last 3 days of a live trial get a
+            standing warning above whatever page the owner is on. */}
+        {showTrialBanner && current?.trial_ends_at && (
+          <div className="border-b border-pop/25 bg-pop/10 px-3 py-2.5 text-[13px] leading-snug text-ink md:px-8">
+            <span className="font-semibold">Free trial ending.</span>{' '}
+            {daysLeft === 0
+              ? 'Today is the last day of your free trial.'
+              : `Your free trial ends ${new Date(current.trial_ends_at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`}{' '}
+            No card is needed until then; after that, the app pauses until
+            you add one.{' '}
+            <Link href="/dashboard/settings" className="font-medium text-terracotta underline-offset-2 hover:underline">
+              See billing
+            </Link>
+          </div>
+        )}
 
         {/* First-run welcome: signed in but not a member of any
             restaurant. A proper onboarding card — what happens next in
