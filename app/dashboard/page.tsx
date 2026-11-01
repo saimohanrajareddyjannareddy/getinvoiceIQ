@@ -19,7 +19,7 @@ type SpendTrend = {
 export default function DashboardPage() {
   const { current } = useRestaurant()
   const restaurantId = current?.id ?? null
-  const [range, setRange] = useState<'weekly' | 'monthly' | 'custom'>('monthly')
+  const [range, setRange] = useState<'weekly' | 'monthly' | 'custom'>('weekly')
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd] = useState('')
   const [totalSpend, setTotalSpend] = useState(0)
