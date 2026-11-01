@@ -6,6 +6,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { friendlyAuthError } from '@/lib/auth-errors'
 import GoogleAuthButton from '@/components/GoogleAuthButton'
+import AnimatedWordmark from '@/components/AnimatedWordmark'
 
 /*
  * getinvoiceIQ — Signup page.
@@ -76,10 +77,7 @@ export default function SignupPage() {
     <div className="grid min-h-screen grid-cols-1 font-sans text-ink md:grid-cols-2">
       {/* LEFT: form */}
       <div className="relative flex flex-col bg-cream px-6 py-10 md:px-14">
-        <div className="flex items-baseline gap-px font-display text-[27px] font-extrabold tracking-[-0.5px] text-ink">
-          <span>getinvoiceIQ</span>
-          <span className="text-[32px] leading-[0] text-terracotta">.</span>
-        </div>
+        <AnimatedWordmark />
 
         <div className="mx-auto my-auto w-full max-w-[380px] self-center py-10">
           {confirmSent ? (
