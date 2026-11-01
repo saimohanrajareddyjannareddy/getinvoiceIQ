@@ -202,15 +202,31 @@ export default function LandingPage() {
 
       {/* FEATURES */}
       <section id="features" className="mx-auto max-w-[1240px] scroll-mt-8 px-6 py-16 md:px-10 md:py-20">
-        <div className="mb-10 max-w-[720px]">
-          <div className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-terracotta">What it handles</div>
-          <h2 className="font-serif text-[34px] font-normal leading-[1.05] tracking-[-0.5px] text-ink md:text-[46px]">
-            The paperwork disappears. The numbers stay.
-          </h2>
-          <p className="mt-4 text-[16.5px] leading-[1.6] text-ink-3">
-            Six jobs move off your counter and into one place: capture, checking, food cost, price changes, recipes,
-            and plain-language answers.
-          </p>
+        <div className="mb-10 flex items-end justify-between gap-10">
+          <div className="max-w-[720px]">
+            <div className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-terracotta">What it handles</div>
+            <h2 className="font-serif text-[34px] font-normal leading-[1.05] tracking-[-0.5px] text-ink md:text-[46px]">
+              The paperwork disappears. The numbers stay.
+            </h2>
+            <p className="mt-4 text-[16.5px] leading-[1.6] text-ink-3">
+              Six jobs move off your counter and into one place: capture, checking, food cost, price changes, recipes,
+              and plain-language answers.
+            </p>
+          </div>
+          {/* The square brand story — their kitchen, their receipt,
+              every ingredient priced — looping quietly beside the
+              section title (large screens only). */}
+          <video
+            className="hidden w-[228px] shrink-0 rounded-[16px] border border-ink/10 shadow-[0_24px_48px_-24px_rgba(23,19,16,0.45)] lg:block"
+            src="/story-square.mp4"
+            poster="/story-square-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="A restaurant kitchen, its receipt, and every ingredient priced — getinvoiceIQ, know where every dollar goes."
+          />
         </div>
         <div className="grid grid-cols-1 gap-[22px] md:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-[16px] border border-ink/[0.08] bg-cream-surface px-7 py-[30px]">
@@ -574,6 +590,18 @@ export default function LandingPage() {
       {/* FINAL CTA */}
       <section id="cta" className="mx-auto mb-5 max-w-[1240px] px-6 md:px-10">
         <div className="rounded-[22px] border border-white/10 bg-coal px-6 py-[72px] text-center md:px-10">
+          {/* Logo sting — plays once as the sign-off to the page and
+              holds on its end card (the mark + tagline) above the ask. */}
+          <video
+            className="mx-auto mb-10 w-full max-w-[540px] rounded-[14px] border border-white/10"
+            src="/logo-sting.mp4"
+            poster="/logo-sting-poster.jpg"
+            autoPlay
+            muted
+            playsInline
+            preload="metadata"
+            aria-label="getinvoiceIQ — know where every dollar goes."
+          />
           <h2 className="mb-[18px] font-serif text-[40px] font-normal leading-[1.02] tracking-[-1px] text-cream md:text-[56px]">
             Find the leak before the month is gone.
           </h2>
