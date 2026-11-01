@@ -4,7 +4,8 @@ import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { SERIES, GRID, TICK, tooltipStyle, CURSOR } from '@/lib/chart-theme'
+import { GRID, TICK, tooltipStyle, CURSOR } from '@/lib/chart-theme'
+import { buildPriceTrend } from '@/lib/price-trend'
 
 type PriceEntry = { invoice_date: string; unit_price: number; unit_qty: number; case_qty: number }
 type TrackedItem = { item_name: string; display_name: string; category: string; prices: PriceEntry[]; current: number; previous: number; change: number; unit: string }
@@ -62,65 +63,9 @@ export default function PriceTrackerPage() {
     return true
   })
 
-  // ── Price trend graph ──────────────────────────────────────────
-  // The homepage mock promises this chart; here it is with real
-  // data. Trailing 6 weeks anchored on the newest purchase in the
-  // data, so the window always holds the restaurant's latest
-  // activity. An item's weekly point is its LAST unit price that
-  // week — the going rate at week's end; weeks with no purchase
-  // stay gaps, never invented values. Up to three items with at
-  // least two weekly points; the biggest mover wears pop, like
-  // the mock, and gets the callout chip.
-  const trend = useMemo(() => {
-    if (items.length === 0) return null
-    const DAY = 86400000
-    const parse = (s: string) => {
-      const [y, m, d] = s.split('-').map(Number)
-      return new Date(y, m - 1, d).getTime()
-    }
-    let anchor = 0
-    items.forEach(i => i.prices.forEach(p => {
-      const t = parse(p.invoice_date)
-      if (t > anchor) anchor = t
-    }))
-    const start = anchor - 41 * DAY
-    const buckets = Array.from({ length: 6 }, (_, w) => {
-      const from = start + w * 7 * DAY
-      return {
-        from,
-        label: new Date(from).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      }
-    })
-    type SeriesT = { item: TrackedItem; color: string; points: (number | null)[]; first: number; last: number; pct: number }
-    const candidates: SeriesT[] = []
-    items.forEach(item => {
-      const points: (number | null)[] = Array(6).fill(null)
-      item.prices.forEach(p => {
-        const idx = Math.floor((parse(p.invoice_date) - start) / (7 * DAY))
-        if (idx >= 0 && idx < 6) points[idx] = p.unit_price
-      })
-      const present = points.filter((v): v is number => v !== null)
-      if (present.length < 2) return
-      const first = present[0]
-      const last = present[present.length - 1]
-      candidates.push({ item, color: '', points, first, last, pct: ((last - first) / first) * 100 })
-    })
-    if (candidates.length === 0) return null
-    candidates.sort((a, b) =>
-      b.points.filter(v => v !== null).length - a.points.filter(v => v !== null).length ||
-      Math.abs(b.pct) - Math.abs(a.pct))
-    const top = candidates.slice(0, 3)
-    ;[...top]
-      .sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))
-      .forEach((s, i) => { s.color = SERIES[i] })
-    const rows = buckets.map((b, w) => {
-      const row: Record<string, string | number | null> = { label: b.label }
-      top.forEach(s => { row[s.item.item_name] = s.points[w] })
-      return row
-    })
-    const mover = [...top].sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))[0]
-    return { rows, series: top, mover }
-  }, [items])
+  // Price trend graph — the derivation lives in lib/price-trend
+  // (shared with the Home dashboard's mini card).
+  const trend = useMemo(() => buildPriceTrend(items), [items])
 
   return (
     <div className="p-4 sm:p-8">
