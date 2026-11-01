@@ -38,7 +38,7 @@ export default function LoginPage() {
       {/* LEFT: form */}
       <div className="relative flex flex-col bg-cream px-6 py-10 md:px-14">
         <div className="flex items-baseline gap-px font-display text-[27px] font-extrabold tracking-[-0.5px] text-ink">
-          <span>InvoiceIQ</span>
+          <span>getinvoiceIQ</span>
           <span className="text-[32px] leading-[0] text-terracotta">.</span>
         </div>
 
@@ -186,7 +186,7 @@ export default function LoginPage() {
         </div>
 
         <div className="absolute bottom-8 left-14 font-serif text-[20px] text-[rgba(247,243,237,.55)]">
-          InvoiceIQ<span className="text-terracotta-hover">.</span>
+          getinvoiceIQ<span className="text-terracotta-hover">.</span>
         </div>
       </div>
     </div>

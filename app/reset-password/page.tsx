@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen flex-col bg-cream px-6 py-10 font-sans text-ink">
       <Link href="/" className="flex items-baseline gap-px self-start font-display text-[27px] font-extrabold tracking-[-0.5px] text-ink">
-        <span>InvoiceIQ</span>
+        <span>getinvoiceIQ</span>
         <span className="text-[32px] leading-[0] text-terracotta">.</span>
       </Link>
 

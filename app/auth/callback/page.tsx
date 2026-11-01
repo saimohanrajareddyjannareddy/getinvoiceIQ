@@ -64,7 +64,7 @@ export default function AuthCallbackPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-6 font-sans text-ink">
       <div className="flex items-baseline gap-px font-display text-[30px] font-extrabold tracking-[-0.5px]">
-        <span>InvoiceIQ</span>
+        <span>getinvoiceIQ</span>
         <span className="text-[34px] leading-[0] text-terracotta">.</span>
       </div>
       <p className="mt-4 text-[15px] text-ink-3">Signing you in…</p>

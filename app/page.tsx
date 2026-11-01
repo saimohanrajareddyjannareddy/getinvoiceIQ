@@ -34,7 +34,7 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="mx-auto flex max-w-[1240px] items-center justify-between px-6 py-[26px] md:px-10">
         <div className="flex items-baseline gap-0.5 font-display text-[28px] font-extrabold tracking-[-0.5px] text-cream">
-          <span>InvoiceIQ</span>
+          <span>getinvoiceIQ</span>
           <span className="text-[34px] leading-[0] text-pop">.</span>
         </div>
         <div className="flex items-center gap-5 md:gap-[34px]">
@@ -285,7 +285,7 @@ export default function LandingPage() {
             {/* sidebar (desktop only) */}
             <aside className="hidden min-h-[460px] bg-coal px-4 py-[22px] text-[#E8E2D6] md:block">
               <div className="px-2 pb-[22px] font-display text-[22px] font-extrabold tracking-tight text-cream">
-                InvoiceIQ<span className="text-terracotta-hover">.</span>
+                getinvoiceIQ<span className="text-terracotta-hover">.</span>
               </div>
               <div className="flex flex-col gap-[3px] text-[14px]">
                 <div className="rounded-[8px] bg-pop/20 px-3 py-[9px] font-semibold text-white">Price tracker</div>
@@ -491,7 +491,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[820px] rounded-[20px] bg-coal px-8 py-[38px] text-[#EDEFE8] shadow-[0_30px_60px_-28px_rgba(23,19,16,.55)] md:px-12">
           <div className="grid grid-cols-1 gap-10 md:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <div className="text-[15px] font-semibold text-pop">InvoiceIQ</div>
+              <div className="text-[15px] font-semibold text-pop">getinvoiceIQ</div>
               <div className="mb-[6px] mt-4 flex flex-wrap items-baseline gap-x-2">
                 <span className="font-serif text-[64px] leading-none text-cream">$99</span>
                 <span className="text-[15px] text-[#C9C2B4]">per location / month</span>
@@ -596,7 +596,7 @@ export default function LandingPage() {
       <footer className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-6 py-10 md:px-10">
         <div className="flex flex-wrap items-center gap-2 text-[13.5px] text-ink-muted">
           <span className="font-display text-[19px] font-extrabold tracking-tight text-ink">
-            InvoiceIQ<span className="text-terracotta">.</span>
+            getinvoiceIQ<span className="text-terracotta">.</span>
           </span>
           <span className="mx-1">·</span> hello@getinvoiceiq.com
         </div>

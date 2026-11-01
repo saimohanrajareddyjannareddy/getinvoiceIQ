@@ -33,9 +33,9 @@ const plexMono = IBM_Plex_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'InvoiceIQ — Restaurant Invoice & Food Cost Software',
+  title: 'getinvoiceIQ — Restaurant Invoice & Food Cost Software',
   description:
-    'Snap a receipt or forward an email and InvoiceIQ reads every line: spend, price alerts, food cost, and recipe costing for independent restaurants. $99 per location/month after a 14-day free trial.',
+    'Snap a receipt or forward an email and getinvoiceIQ reads every line: spend, price alerts, food cost, and recipe costing for independent restaurants. $99 per location/month after a 14-day free trial.',
 }
 
 export default function RootLayout({

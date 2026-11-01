@@ -173,7 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }`}
       >
         <Link href="/dashboard" className="mb-5 px-2 font-display text-[26px] font-extrabold tracking-tight text-cream">
-          InvoiceIQ<span className="text-pop">.</span>
+          getinvoiceIQ<span className="text-pop">.</span>
         </Link>
 
         {/* Restaurant switcher — same useRestaurant() wiring, custom dropdown for readability. */}

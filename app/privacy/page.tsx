@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — InvoiceIQ',
+  title: 'Privacy Policy — getinvoiceIQ',
   description: 'What InvoiceIQ collects, why, who processes it, and the choices an account owner has.',
 }
 
@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-cream font-sans text-ink">
       <header className="mx-auto flex max-w-[820px] items-center justify-between px-6 py-8">
         <Link href="/" className="flex items-baseline gap-px font-display text-[24px] font-extrabold tracking-[-0.5px] text-ink">
-          <span>InvoiceIQ</span>
+          <span>getinvoiceIQ</span>
           <span className="text-[28px] leading-[0] text-terracotta">.</span>
         </Link>
         <Link href="/signup" className="text-[14px] font-semibold text-pop hover:text-pop-hover">Start free trial</Link>
