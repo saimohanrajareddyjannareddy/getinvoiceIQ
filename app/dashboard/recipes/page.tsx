@@ -19,6 +19,7 @@ import {
   toBase,
   unitKind,
   usableCostPerBase,
+  effectiveBuyUnit,
   FREE_INGREDIENTS,
   RECIPE_UNITS,
   type CanonicalItem,
@@ -69,6 +70,7 @@ export default function RecipesPage() {
 
   const [ingSettings, setIngSettings] = useState<Map<string, IngredientSetting>>(new Map())
   const [ingSettingsMissing, setIngSettingsMissing] = useState(false)
+  const [unitSizeMissing, setUnitSizeMissing] = useState(false)
   const [needsPack, setNeedsPack] = useState<Set<string>>(new Set())
   const [meta, setMeta] = useState<Map<string, RecipeMeta>>(new Map())
   const [metaMissing, setMetaMissing] = useState(false)
@@ -99,6 +101,7 @@ export default function RecipesPage() {
     ])
     setIngSettings(settingsRes.settings)
     setIngSettingsMissing(settingsRes.missing)
+    setUnitSizeMissing(settingsRes.unitSizeMissing)
     setNeedsPack(packGaps)
     const { error: metaProbeErr } = await supabase.from('recipe_meta').select('id').limit(1)
     setMetaMissing(!!metaProbeErr)
@@ -540,8 +543,12 @@ export default function RecipesPage() {
       recipeKinds.set(l.ingredient_name, set)
     }
   }
+  const buyUnitOf = (name: string): string | null => {
+    const item = canonByName.get(name)
+    return effectiveBuyUnit(item, item ? ingSettings.get(item.id) : undefined)
+  }
   const unitMismatch = (v: VarianceRow): boolean => {
-    const buyKind = unitKind(canonByName.get(v.ingredient)?.default_unit)
+    const buyKind = unitKind(buyUnitOf(v.ingredient))
     const kinds = recipeKinds.get(v.ingredient)
     return !!buyKind && !!kinds && [...kinds].some((k) => k !== buyKind)
   }
@@ -552,7 +559,7 @@ export default function RecipesPage() {
   const varianceNoRecipe = variance.filter((v) => v.variancePct == null && v.actualBase > 0)
   const dishesWithRecipe = dishes.filter((d) => (recipes.get(d.menuItemName)?.length ?? 0) > 0).length
   const calibHints = calibrationHints(varianceMain, 25, (ing) => {
-    const one = toBase(1, canonByName.get(ing)?.default_unit)
+    const one = toBase(1, buyUnitOf(ing))
     return one ? one.base : null
   }).filter(
     (h) => !dismissedCalib.includes(h.ingredient)
@@ -561,7 +568,7 @@ export default function RecipesPage() {
     const cost = costs.get(v.ingredient)
     const item = canonByName.get(v.ingredient)
     if (!cost || cost.costPerBase == null || !item) return null
-    if (unitKind(item.default_unit) !== cost.baseKind) return null
+    if (unitKind(buyUnitOf(v.ingredient)) !== cost.baseKind) return null
     return (v.actualBase - v.theoreticalBase) * cost.costPerBase
   }
   // Ingredients the recipes use (and case buys missing a pack size),
@@ -1084,6 +1091,7 @@ export default function RecipesPage() {
           rows={settingsRows}
           settings={ingSettings}
           missing={ingSettingsMissing}
+          unitSizeMissing={unitSizeMissing}
           onSaved={load}
         />
       )}
@@ -1170,10 +1178,10 @@ export default function RecipesPage() {
                       <tr key={v.ingredient} className="border-b border-ink/[0.05]">
                         <td className="py-2.5 pr-3 font-medium text-ink">{v.ingredient}</td>
                         <td className="px-3 py-2.5 text-right font-mono text-ink">
-                          {formatBaseQty(v.theoreticalBase, item?.default_unit)}
+                          {formatBaseQty(v.theoreticalBase, buyUnitOf(v.ingredient) ?? item?.default_unit)}
                         </td>
                         <td className="px-3 py-2.5 text-right font-mono text-ink">
-                          {formatBaseQty(v.actualBase, item?.default_unit)}
+                          {formatBaseQty(v.actualBase, buyUnitOf(v.ingredient) ?? item?.default_unit)}
                         </td>
                         <td
                           className={`px-3 py-2.5 text-right font-mono font-semibold ${
@@ -1215,11 +1223,12 @@ export default function RecipesPage() {
             <p className="mt-4 text-[12.5px] text-ink-muted">
               <span className="font-semibold text-ink">Units don’t match, so not compared:</span>{' '}
               {varianceMismatch
-                .map((v) => `${v.ingredient} (bought by ${(canonByName.get(v.ingredient)?.default_unit ?? '').toLowerCase()})`)
+                .map((v) => `${v.ingredient} (bought by ${(buyUnitOf(v.ingredient) ?? '').toLowerCase()})`)
                 .join(' · ')}
               <span className="block mt-1">
                 The recipe measures these by weight or volume, but invoices count them (bunches,
-                cans, cartons).
+                cans, cartons). Set “1 on invoice =” in the table above (cilantro: 1 = 3 oz) and
+                they’re compared.
               </span>
             </p>
           )}
@@ -1230,7 +1239,7 @@ export default function RecipesPage() {
               {varianceNoRecipe
                 .map(
                   (v) =>
-                    `${v.ingredient} (${formatBaseQty(v.actualBase, canonByName.get(v.ingredient)?.default_unit)})`
+                    `${v.ingredient} (${formatBaseQty(v.actualBase, buyUnitOf(v.ingredient))})`
                 )
                 .join(' · ')}
             </p>

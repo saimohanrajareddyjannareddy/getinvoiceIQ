@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
+  effectiveBuyUnit,
   toBase,
   usableCostPerBase,
+  UNIT_SIZE_UNITS,
   type CanonicalItem,
   type IngredientCost,
   type IngredientSetting,
@@ -17,6 +19,8 @@ import {
  *   app knows what one case holds ("1 case = 4 GAL").
  * - Usable yield: recipes are written in usable quantities (peeled
  *   onion, trimmed chicken), so plate cost = purchase price ÷ yield.
+ * - "1 on invoice =": what one invoice unit really is when the invoice
+ *   says "1" for a 35 lb jug or a bunch of cilantro (sql/021).
  */
 
 export interface SettingsRow {
@@ -44,31 +48,41 @@ export default function IngredientSettingsCard({
   rows,
   settings,
   missing,
+  unitSizeMissing,
   onSaved,
 }: {
   restaurantId: string
   rows: SettingsRow[]
   settings: Map<string, IngredientSetting>
   missing: boolean
+  unitSizeMissing: boolean
   onSaved: () => void
 }) {
-  const [drafts, setDrafts] = useState<Record<string, { pack: string; yieldPct: string }>>({})
+  type Draft = { pack: string; yieldPct: string; size: string; sizeUnit: string }
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({})
   const [saving, setSaving] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const draftFor = (id: string) => {
-    if (drafts[id]) return drafts[id]
+  const savedDraft = (id: string): Draft => {
     const s = settings.get(id)
     return {
       pack: s?.packQty != null ? String(s.packQty) : '',
       yieldPct: s ? String(s.yieldPct) : '100',
+      size: s?.unitSize != null ? String(s.unitSize) : '',
+      sizeUnit: s?.unitSizeUnit ?? 'lb',
     }
   }
+  const draftFor = (id: string): Draft => drafts[id] ?? savedDraft(id)
 
   async function save(item: CanonicalItem) {
     const d = draftFor(item.id)
     const pack = d.pack.trim() === '' ? null : Number(d.pack)
     const yieldPct = Number(d.yieldPct)
+    const size = d.size.trim() === '' ? null : Number(d.size)
+    if (size != null && !(size > 0)) {
+      setError(`${item.name}: “1 on invoice =” must be a number above 0, or empty.`)
+      return
+    }
     if (pack != null && !(pack > 0)) {
       setError(`${item.name}: pack size must be a number above 0, or empty.`)
       return
@@ -85,6 +99,9 @@ export default function IngredientSettingsCard({
         canonical_item_id: item.id,
         pack_qty: pack,
         yield_pct: yieldPct,
+        ...(unitSizeMissing
+          ? {}
+          : { unit_size: size, unit_size_unit: size != null ? d.sizeUnit : null }),
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'restaurant_id,canonical_item_id' }
@@ -111,8 +128,17 @@ export default function IngredientSettingsCard({
         Two numbers that make plate costs honest. <strong className="text-ink-2">Pack size</strong>:
         what one case holds, so case purchases can be priced. <strong className="text-ink-2">Usable
         yield</strong>: what’s left after peeling and trimming (onion ≈ 90%, whole chicken ≈ 70%) —
-        recipes use the usable amount, so you pay for the loss on every plate.
+        recipes use the usable amount, so you pay for the loss on every plate.{' '}
+        <strong className="text-ink-2">1 on invoice =</strong>: when the invoice says “1” for a
+        whole jug, bag or bunch, enter what it really is (oil: 1 = 35 lb; cilantro: 1 = 3 oz).
       </p>
+      {!missing && unitSizeMissing && (
+        <div className="mt-4 rounded-[10px] border border-terracotta/30 bg-terracotta/[0.08] px-4 py-3 text-[13px] text-ink">
+          <span className="font-semibold text-terracotta">One setup step:</span> run{' '}
+          <span className="font-mono">sql/021_unit_size.sql</span> in the Supabase SQL editor to
+          turn on “1 on invoice =”.
+        </div>
+      )}
 
       {missing ? (
         <div className="mt-4 rounded-[10px] border border-terracotta/30 bg-terracotta/[0.08] px-4 py-3 text-[13px] text-ink">
@@ -141,11 +167,12 @@ export default function IngredientSettingsCard({
             </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[680px] text-left text-[13.5px]">
+              <table className="w-full min-w-[820px] text-left text-[13.5px]">
                 <thead>
                   <tr className="border-b border-ink/[0.08] text-[12px] uppercase tracking-wide text-ink-muted">
                     <th className="py-2 pr-3 font-medium">Ingredient</th>
                     <th className="px-3 py-2 text-right font-medium">Bought at</th>
+                    <th className="px-3 py-2 text-right font-medium">1 on invoice =</th>
                     <th className="px-3 py-2 text-right font-medium">1 case =</th>
                     <th className="px-3 py-2 text-right font-medium">Usable</th>
                     <th className="px-3 py-2 text-right font-medium">Real cost</th>
@@ -155,7 +182,9 @@ export default function IngredientSettingsCard({
                 <tbody>
                   {rows.map(({ item, cost, needsPack }) => {
                     const d = draftFor(item.id)
-                    const unit = item.default_unit ?? ''
+                    const s = settings.get(item.id)
+                    // Prices show per the unit it's effectively bought in.
+                    const unit = effectiveBuyUnit(item, s) ?? ''
                     const bought = perDefaultUnit(cost?.costPerBase ?? null, unit)
                     // Preview the usable cost with the yield being typed.
                     const typedYield = Number(d.yieldPct)
@@ -167,10 +196,12 @@ export default function IngredientSettingsCard({
                           })
                         : null
                     const real = perDefaultUnit(preview, unit)
-                    const s = settings.get(item.id)
+                    const saved = savedDraft(item.id)
                     const dirty =
-                      d.pack !== (s?.packQty != null ? String(s.packQty) : '') ||
-                      d.yieldPct !== (s ? String(s.yieldPct) : '100')
+                      d.pack !== saved.pack ||
+                      d.yieldPct !== saved.yieldPct ||
+                      d.size !== saved.size ||
+                      (d.size !== '' && d.sizeUnit !== saved.sizeUnit)
                     return (
                       <tr key={item.id} className="border-b border-ink/[0.05] last:border-0">
                         <td className="py-2 pr-3 text-ink">
@@ -184,7 +215,29 @@ export default function IngredientSettingsCard({
                         <td className="px-3 py-2 text-right font-mono text-ink-3">
                           {bought != null ? `${money(bought)}/${unit}` : '—'}
                         </td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="whitespace-nowrap px-3 py-2 text-right">
+                          <input
+                            aria-label={`${item.name}: what one invoice unit really is`}
+                            inputMode="decimal"
+                            className={input}
+                            placeholder="—"
+                            disabled={unitSizeMissing}
+                            value={d.size}
+                            onChange={(e) => setDrafts((p) => ({ ...p, [item.id]: { ...d, size: e.target.value } }))}
+                          />
+                          <select
+                            aria-label={`${item.name}: unit`}
+                            disabled={unitSizeMissing}
+                            value={d.sizeUnit}
+                            onChange={(e) => setDrafts((p) => ({ ...p, [item.id]: { ...d, sizeUnit: e.target.value } }))}
+                            className="ml-1 rounded-md border border-ink/15 bg-cream-surface px-1 py-1 text-[12px] text-ink"
+                          >
+                            {UNIT_SIZE_UNITS.map((u) => (
+                              <option key={u} value={u}>{u}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right">
                           <input
                             aria-label={`${item.name} units per case`}
                             inputMode="decimal"
@@ -193,7 +246,7 @@ export default function IngredientSettingsCard({
                             value={d.pack}
                             onChange={(e) => setDrafts((p) => ({ ...p, [item.id]: { ...d, pack: e.target.value } }))}
                           />
-                          <span className="ml-1 text-[12px] text-ink-muted">{unit}</span>
+                          <span className="ml-1 text-[12px] text-ink-muted">{item.default_unit ?? ''}</span>
                         </td>
                         <td className="px-3 py-2 text-right">
                           <input
