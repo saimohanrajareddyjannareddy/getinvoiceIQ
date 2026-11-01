@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
@@ -19,6 +19,7 @@ type SpendTrend = {
 export default function DashboardPage() {
   const { current } = useRestaurant()
   const restaurantId = current?.id ?? null
+  const reqSeq = useRef(0)
   const [range, setRange] = useState<'weekly' | 'monthly' | 'custom'>('weekly')
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd] = useState('')
@@ -37,10 +38,6 @@ export default function DashboardPage() {
   // null = no sales synced yet (or zero sales).
   const [foodCostPct, setFoodCostPct] = useState<number | null>(null)
 
-  useEffect(() => {
-    if (!restaurantId) return
-    loadData()
-  }, [restaurantId, range, customStart, customEnd])
 
   // Price history (all approved invoices, range-independent): feeds
   // the mini price-tracker card and the per-invoice move counts on
@@ -134,7 +131,8 @@ export default function DashboardPage() {
   function getDateRange() {
     const now = new Date()
     if (range === 'weekly') {
-      const start = new Date(now); start.setDate(now.getDate() - 7)
+      // Last 7 days including today (was 8: today-7..today).
+      const start = new Date(now); start.setDate(now.getDate() - 6)
       return { start: localDate(start), end: localDate(now) }
     }
     if (range === 'monthly') {
@@ -146,19 +144,25 @@ export default function DashboardPage() {
   function getPrevDateRange() {
     const now = new Date()
     if (range === 'weekly') {
+      // The 7 days before the current window, no shared day.
       const end = new Date(now); end.setDate(now.getDate() - 7)
-      const start = new Date(now); start.setDate(now.getDate() - 14)
+      const start = new Date(now); start.setDate(now.getDate() - 13)
       return { start: localDate(start), end: localDate(end) }
     }
     if (range === 'monthly') {
+      // Month-to-date vs the SAME days of last month. Comparing day 1
+      // of a month against all of last month read as "↓100% vs prev".
       const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       const lastDay = new Date(now.getFullYear(), now.getMonth(), 0)
-      return { start: localDate(d), end: localDate(lastDay) }
+      const sameDay = new Date(now.getFullYear(), now.getMonth() - 1, Math.min(now.getDate(), lastDay.getDate()))
+      return { start: localDate(d), end: localDate(sameDay) }
     }
     return null
   }
 
   async function loadData() {
+    const seq = ++reqSeq.current
+    const stale = () => seq !== reqSeq.current
     const { start, end } = getDateRange()
     if (!start || !end) return
 
@@ -169,6 +173,7 @@ export default function DashboardPage() {
       .gte('invoice_date', start)
       .lte('invoice_date', end)
       .order('invoice_date', { ascending: false })
+    if (stale()) return
 
     if (!headers) return
     // Unapproved (needs_review) invoices don't count in the books yet.
@@ -189,6 +194,7 @@ export default function DashboardPage() {
         ? supabase.from('invoice_headers').select('total, review_status').eq('restaurant_id', restaurantId).gte('invoice_date', prev.start).lte('invoice_date', prev.end)
         : Promise.resolve({ data: null }),
     ])
+    if (stale()) return
 
     if (linesResult.data) {
       const catMap: Record<string, number> = {}
@@ -248,6 +254,7 @@ export default function DashboardPage() {
       supabase.from('daily_sales').select('net_cents').eq('restaurant_id', restaurantId).gte('date', t30start).lte('date', t30end),
       supabase.from('invoice_headers').select('total, review_status').eq('restaurant_id', restaurantId).gte('invoice_date', t30start).lte('invoice_date', t30end),
     ])
+    if (stale()) return
     const netSales30 = (sales30.data ?? []).reduce((s: number, r: { net_cents?: number | null }) => s + (r.net_cents || 0), 0) / 100
     const spend30Total = (spend30.data ?? []).reduce((s: number, h: { total?: number | null; review_status?: string | null }) => s + (h.review_status === 'needs_review' ? 0 : h.total || 0), 0)
     setFoodCostPct(netSales30 > 0 ? (spend30Total / netSales30) * 100 : null)
@@ -256,10 +263,20 @@ export default function DashboardPage() {
     // the Alerts page).
     if (restaurantId) {
       fetchPriceAlerts(supabase, restaurantId)
-        .then(setPriceAlerts)
-        .catch(() => setPriceAlerts([]))
+        .then((a) => { if (!stale()) setPriceAlerts(a) })
+        .catch(() => { if (!stale()) setPriceAlerts([]) })
     }
   }
+
+  // Re-load when the restaurant (or range) changes. reqSeq makes a
+  // slower, older request drop its results instead of overwriting
+  // the newer one (switching restaurants used to be able to show
+  // the previous restaurant's numbers).
+  useEffect(() => {
+    if (!restaurantId) return
+    loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadData reads current state; these are its inputs
+  }, [restaurantId, range, customStart, customEnd])
 
   // ---- Presentation-only derived values (no new data) ----
   const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

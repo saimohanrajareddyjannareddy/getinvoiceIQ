@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
-import { CheckCircle, AlertCircle, Link2, Key, AlertTriangle, Trash2, Store, CreditCard, X, Mail, MessageCircle } from 'lucide-react'
+import { CheckCircle, AlertCircle, Link2, Key, AlertTriangle, Trash2, CreditCard, X, Mail, MessageCircle } from 'lucide-react'
 import { useActivity } from '@/lib/activity'
 
 type DeletionCounts = {
@@ -821,7 +821,7 @@ export default function SettingsPage() {
           </a>
         ) : (
           <p className="text-sm text-ink-muted">
-            Email scanning isn't switched on yet — it will appear here once it's ready.
+            Email scanning isn’t switched on yet — it will appear here once it’s ready.
           </p>
         )}
         {mailMsg && <p className="text-sm text-ink-3 mt-3">{mailMsg}</p>}

@@ -100,7 +100,7 @@ export default function SearchPage() {
       {loading ? (
         <div className="text-center py-12 text-ink-muted">Searching...</div>
       ) : searched && results.length === 0 ? (
-        <div className="text-center py-12 text-ink-muted">No results found for "{query}"</div>
+        <div className="text-center py-12 text-ink-muted">No results found for “{query}”</div>
       ) : results.length > 0 ? (
         <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
           <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>

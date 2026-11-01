@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
     ? `Restaurant: ${rest?.name ?? 'a restaurant'}\nPreparation (one batch): ${dish}\n\nIngredients this restaurant already buys (prefer these exact names when they fit):\n${vocab}`
     : `Restaurant: ${rest?.name ?? 'a restaurant'}\nDish: ${dish}\n\nIngredients this restaurant already buys (prefer these exact names when they fit):\n${vocab}`
 
-  let draft: { ingredient_name: string; quantity: number; unit: string }[] = []
+  const draft: { ingredient_name: string; quantity: number; unit: string }[] = []
   let yieldQty: number | null = null
   let yieldUnit: string | null = null
   try {

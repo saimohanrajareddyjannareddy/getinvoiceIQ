@@ -8,6 +8,7 @@ import {
   fetchCanonicalItems,
   fetchDishSales,
   fetchIngredientCosts,
+  fetchIngredientSettings,
   fetchRecipeMeta,
   fetchRecipes,
   fetchUsageVariance,
@@ -17,15 +18,19 @@ import {
   recipeStatus,
   toBase,
   unitKind,
+  usableCostPerBase,
+  FREE_INGREDIENTS,
   RECIPE_UNITS,
   type CanonicalItem,
   type DishSales,
   type IngredientCost,
+  type IngredientSetting,
   type RecipeLine,
   type RecipeMeta,
   type CalibrationHint,
   type VarianceRow,
 } from '@/lib/recipes'
+import IngredientSettingsCard from '@/components/IngredientSettingsCard'
 
 // Recipes & dish costing (stage 1): dishes come from POS sales,
 // the AI drafts a per-serving recipe from the restaurant's own
@@ -61,6 +66,9 @@ export default function RecipesPage() {
   const [varianceRange, setVarianceRange] = useState<{ start: string; end: string } | null>(null)
   const [dismissedCalib, setDismissedCalib] = useState<string[]>([])
 
+  const [ingSettings, setIngSettings] = useState<Map<string, IngredientSetting>>(new Map())
+  const [ingSettingsMissing, setIngSettingsMissing] = useState(false)
+  const [needsPack, setNeedsPack] = useState<Set<string>>(new Set())
   const [meta, setMeta] = useState<Map<string, RecipeMeta>>(new Map())
   const [metaMissing, setMetaMissing] = useState(false)
   const [editingComp, setEditingComp] = useState<string | null>(null)
@@ -77,13 +85,20 @@ export default function RecipesPage() {
   const load = useCallback(async () => {
     if (!restaurantId) return
     if (!loadedOnceRef.current) setLoading(true)
-    const canon = await fetchCanonicalItems(supabase)
+    const [canon, settingsRes] = await Promise.all([
+      fetchCanonicalItems(supabase),
+      fetchIngredientSettings(supabase, restaurantId),
+    ])
+    const packGaps = new Set<string>()
     const [dishList, recipeMap, purchaseMap, metaMap] = await Promise.all([
       fetchDishSales(supabase, restaurantId, 30),
       fetchRecipes(supabase, restaurantId),
-      fetchIngredientCosts(supabase, restaurantId, canon),
+      fetchIngredientCosts(supabase, restaurantId, canon, settingsRes.settings, packGaps),
       fetchRecipeMeta(supabase, restaurantId),
     ])
+    setIngSettings(settingsRes.settings)
+    setIngSettingsMissing(settingsRes.missing)
+    setNeedsPack(packGaps)
     const { error: metaProbeErr } = await supabase.from('recipe_meta').select('id').limit(1)
     setMetaMissing(!!metaProbeErr)
     setMeta(metaMap)
@@ -492,19 +507,28 @@ export default function RecipesPage() {
   // Ingredients referenced by recipes that have no price and no
   // recipe of their own — prime component candidates (sambar,
   // coconut chutney, house sauces…).
-  const undefinedRefs = (() => {
+  // Catalog ingredients (sugar, tomato, shrimp) aren't components —
+  // they just have no price yet, so they're listed separately.
+  const { undefinedRefs, unpricedIngredients } = (() => {
     const seen = new Set<string>()
     for (const lines of recipes.values()) {
       for (const l of lines) {
-        if (!costs.has(l.ingredient_name) && !recipes.has(l.ingredient_name)) {
-          seen.add(l.ingredient_name)
-        }
+        const n = l.ingredient_name
+        if (costs.has(n) || recipes.has(n) || FREE_INGREDIENTS.has(n.trim().toLowerCase())) continue
+        seen.add(n)
       }
     }
-    return [...seen].sort()
+    const all = [...seen].sort()
+    return {
+      undefinedRefs: all.filter((n) => !canonByName.has(n)),
+      unpricedIngredients: all.filter((n) => canonByName.has(n)),
+    }
   })()
   const definedComponents = [...meta.keys()].sort()
-  const calibHints = calibrationHints(variance).filter(
+  const calibHints = calibrationHints(variance, 25, (ing) => {
+    const one = toBase(1, canonByName.get(ing)?.default_unit)
+    return one ? one.base : null
+  }).filter(
     (h) => !dismissedCalib.includes(h.ingredient)
   )
   const varianceMain = variance.filter((v) => v.variancePct != null)
@@ -516,6 +540,19 @@ export default function RecipesPage() {
     if (unitKind(item.default_unit) !== cost.baseKind) return null
     return (v.actualBase - v.theoreticalBase) * cost.costPerBase
   }
+  // Ingredients the recipes use (and case buys missing a pack size),
+  // for the pack-size & yield card. Gaps first, then A–Z.
+  const settingsRows = (() => {
+    const names = new Set<string>(needsPack)
+    for (const lines of recipes.values()) for (const l of lines) names.add(l.ingredient_name)
+    return [...names]
+      .map((n) => canonByName.get(n))
+      .filter((it): it is CanonicalItem => !!it)
+      .map((item) => ({ item, cost: costs.get(item.name), needsPack: needsPack.has(item.name) }))
+      .sort((a, b) =>
+        a.needsPack !== b.needsPack ? (a.needsPack ? -1 : 1) : a.item.name.localeCompare(b.item.name)
+      )
+  })()
   const hasConfirmedRecipe = [...recipes.values()].some((lines) =>
     lines.some((l) => l.confidence === 'user_confirmed' || l.confidence === 'ai_inferred')
   )
@@ -647,9 +684,10 @@ export default function RecipesPage() {
                           {editLines.map((row, i) => {
                             const base = toBase(Number(row.quantity) || 0, row.unit)
                             const c = costs.get(row.ingredient_name)
+                            const usable = usableCostPerBase(c)
                             const lineCost =
-                              base && c?.costPerBase != null && c.baseKind === base.kind
-                                ? base.base * c.costPerBase
+                              base && usable != null && c?.baseKind === base.kind
+                                ? base.base * usable
                                 : null
                             return (
                               <div key={i} className="flex flex-wrap items-center gap-2">
@@ -748,9 +786,11 @@ export default function RecipesPage() {
 
       {!loading && dishes.length > 0 && (
         <p className="mt-4 text-[12.5px] text-ink-muted">
-          Plate costs marked “+” are missing a price for at least one ingredient (it hasn't
-          appeared on a recent invoice, or the invoice line couldn't be matched to the
-          ingredient catalog). Costs refresh from your newest invoices automatically.
+          Plate costs marked “+” are missing a price for at least one ingredient (it hasn’t
+          appeared on a recent invoice, the invoice line couldn’t be matched to the
+          ingredient catalog, or it’s bought by the case and needs a pack size — set that in
+          the pack size & yield table below). Costs refresh from your newest invoices
+          automatically.
         </p>
       )}
 
@@ -759,7 +799,7 @@ export default function RecipesPage() {
         <div className={`${card} mt-6`}>
           <h2 className="font-serif text-[22px] text-ink">Components — prep recipes</h2>
           <p className="mt-1 max-w-2xl text-[13px] text-ink-muted">
-            Sambar, chutneys, sauces and batters aren't ingredients — they're recipes of their
+            Sambar, chutneys, sauces and batters aren’t ingredients — they’re recipes of their
             own, made in batches and used by the ounce across many dishes. Define a component
             once and every dish that uses it prices through its batch cost (batch cost ÷ yield
             = cost per oz).
@@ -770,6 +810,19 @@ export default function RecipesPage() {
               <span className="font-semibold text-terracotta">One setup step:</span> run{' '}
               <span className="font-mono">sql/018_recipe_meta.sql</span> in the Supabase SQL
               editor so components can record their batch yield. (Run it before sql/008.)
+            </div>
+          )}
+
+          {unpricedIngredients.length > 0 && (
+            <div className="mt-4">
+              <div className="text-[12.5px] font-semibold tracking-[0.02em] text-ink-muted">
+                Ingredients with no price yet
+              </div>
+              <p className="mt-1 text-[12.5px] text-ink-muted">
+                Not on a recent approved invoice, or bought by the case without a pack size. Dishes
+                using them show a “+” plate cost.
+              </p>
+              <p className="mt-2 text-[13px] text-ink-3">{unpricedIngredients.join(' · ')}</p>
             </div>
           )}
 
@@ -879,9 +932,10 @@ export default function RecipesPage() {
                           {compLines.map((row, i) => {
                             const base = toBase(Number(row.quantity) || 0, row.unit)
                             const c = costs.get(row.ingredient_name)
+                            const usable = usableCostPerBase(c)
                             const lineCost =
-                              base && c?.costPerBase != null && c.baseKind === base.kind
-                                ? base.base * c.costPerBase
+                              base && usable != null && c?.baseKind === base.kind
+                                ? base.base * usable
                                 : null
                             return (
                               <div key={i} className="flex flex-wrap items-center gap-2">
@@ -995,6 +1049,17 @@ export default function RecipesPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* PACK SIZES & USABLE YIELD */}
+      {!loading && restaurantId && (needsPack.size > 0 || recipes.size > 0) && (
+        <IngredientSettingsCard
+          restaurantId={restaurantId}
+          rows={settingsRows}
+          settings={ingSettings}
+          missing={ingSettingsMissing}
+          onSaved={load}
+        />
       )}
 
       {/* THEORETICAL VS ACTUAL */}
@@ -1115,7 +1180,7 @@ export default function RecipesPage() {
                 Your purchases disagree with your written recipes on these ingredients. If
                 the difference is portion size (not waste or stock build-up), apply the fix
                 and every recipe using that ingredient scales to match reality. Purchases
-                aren't usage, so judge each one.
+                aren’t usage, so judge each one.
               </p>
               <div className="mt-3 space-y-2">
                 {calibHints.map((h) => {

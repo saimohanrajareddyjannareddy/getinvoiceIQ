@@ -1,35 +1,42 @@
 import type { Metadata } from 'next'
-import { Archivo, Instrument_Serif, Inter, IBM_Plex_Mono } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth'
 import { RestaurantProvider } from '@/lib/restaurant'
 
 // mise design system fonts (from Claude Design handoff):
 // Instrument Serif — display / headings, Inter — body, IBM Plex Mono — numbers/data.
-const instrumentSerif = Instrument_Serif({
+// Self-hosted from app/fonts (see the README there): next/font/google
+// downloads at build time, and a failed download fails the deploy.
+const instrumentSerif = localFont({
   variable: '--font-instrument-serif',
-  subsets: ['latin'],
-  weight: '400', // Instrument Serif ships a single 400 weight
-  style: ['normal', 'italic'],
+  src: [
+    { path: './fonts/instrument-serif-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/instrument-serif-latin-400-italic.woff2', weight: '400', style: 'italic' },
+  ],
 })
 
-const inter = Inter({
+const inter = localFont({
   variable: '--font-inter',
-  subsets: ['latin'],
+  src: './fonts/inter-latin-wght-normal.woff2',
+  weight: '100 900',
 })
 
 // Display grotesque for the 2026-10-29 reskin — heavy weights carry
 // the wordmark, greetings and big numbers.
-const archivo = Archivo({
+const archivo = localFont({
   variable: '--font-archivo',
-  subsets: ['latin'],
-  weight: ['600', '700', '800', '900'],
+  src: './fonts/archivo-latin-wght-normal.woff2',
+  weight: '100 900',
 })
 
-const plexMono = IBM_Plex_Mono({
+const plexMono = localFont({
   variable: '--font-plex-mono',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  src: [
+    { path: './fonts/ibm-plex-mono-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/ibm-plex-mono-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/ibm-plex-mono-latin-600-normal.woff2', weight: '600', style: 'normal' },
+  ],
 })
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getStripe, stripeConfigured } from '@/lib/stripe'
+import { getStripe, resolvePriceId, stripeConfigured } from '@/lib/stripe'
 
 /*
  * Creates a Stripe Checkout session for the restaurant's
@@ -59,6 +59,10 @@ async function createSession(
   restaurant_id: string,
   req: NextRequest
 ) {
+  // Resolve the price before creating a Customer, so a bad
+  // STRIPE_PRICE_ID doesn't leave an orphan Customer behind.
+  const priceId = await resolvePriceId(stripe)
+
   let customerId: string = restaurant.stripe_customer_id ?? ''
   if (!customerId) {
     // Owner's email for receipts: first owner membership on the restaurant.
@@ -93,7 +97,7 @@ async function createSession(
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId,
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     subscription_data: {
       metadata: { restaurant_id },
       ...(trialEnd && trialEnd > Math.floor(Date.now() / 1000)

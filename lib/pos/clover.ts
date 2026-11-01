@@ -276,7 +276,7 @@ export async function fetchCloverSalesAggregates(
           assigned += v
           perLabel.set(s.label, (perLabel.get(s.label) ?? 0) + v)
         }
-        let residual = day.netCents - assigned
+        const residual = day.netCents - assigned
         if (residual !== 0 && shares.length > 0) {
           const biggest = shares.reduce((a, b) => (b.raw > a.raw ? b : a))
           perLabel.set(biggest.label, (perLabel.get(biggest.label) ?? 0) + residual)
