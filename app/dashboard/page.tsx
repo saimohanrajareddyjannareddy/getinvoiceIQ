@@ -131,7 +131,8 @@ export default function DashboardPage() {
   function getDateRange() {
     const now = new Date()
     if (range === 'weekly') {
-      const start = new Date(now); start.setDate(now.getDate() - 7)
+      // Last 7 days including today (was 8: today-7..today).
+      const start = new Date(now); start.setDate(now.getDate() - 6)
       return { start: localDate(start), end: localDate(now) }
     }
     if (range === 'monthly') {
@@ -143,14 +144,18 @@ export default function DashboardPage() {
   function getPrevDateRange() {
     const now = new Date()
     if (range === 'weekly') {
+      // The 7 days before the current window, no shared day.
       const end = new Date(now); end.setDate(now.getDate() - 7)
-      const start = new Date(now); start.setDate(now.getDate() - 14)
+      const start = new Date(now); start.setDate(now.getDate() - 13)
       return { start: localDate(start), end: localDate(end) }
     }
     if (range === 'monthly') {
+      // Month-to-date vs the SAME days of last month. Comparing day 1
+      // of a month against all of last month read as "↓100% vs prev".
       const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       const lastDay = new Date(now.getFullYear(), now.getMonth(), 0)
-      return { start: localDate(d), end: localDate(lastDay) }
+      const sameDay = new Date(now.getFullYear(), now.getMonth() - 1, Math.min(now.getDate(), lastDay.getDate()))
+      return { start: localDate(d), end: localDate(sameDay) }
     }
     return null
   }

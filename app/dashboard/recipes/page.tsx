@@ -19,6 +19,7 @@ import {
   toBase,
   unitKind,
   usableCostPerBase,
+  FREE_INGREDIENTS,
   RECIPE_UNITS,
   type CanonicalItem,
   type DishSales,
@@ -506,19 +507,28 @@ export default function RecipesPage() {
   // Ingredients referenced by recipes that have no price and no
   // recipe of their own — prime component candidates (sambar,
   // coconut chutney, house sauces…).
-  const undefinedRefs = (() => {
+  // Catalog ingredients (sugar, tomato, shrimp) aren't components —
+  // they just have no price yet, so they're listed separately.
+  const { undefinedRefs, unpricedIngredients } = (() => {
     const seen = new Set<string>()
     for (const lines of recipes.values()) {
       for (const l of lines) {
-        if (!costs.has(l.ingredient_name) && !recipes.has(l.ingredient_name)) {
-          seen.add(l.ingredient_name)
-        }
+        const n = l.ingredient_name
+        if (costs.has(n) || recipes.has(n) || FREE_INGREDIENTS.has(n.trim().toLowerCase())) continue
+        seen.add(n)
       }
     }
-    return [...seen].sort()
+    const all = [...seen].sort()
+    return {
+      undefinedRefs: all.filter((n) => !canonByName.has(n)),
+      unpricedIngredients: all.filter((n) => canonByName.has(n)),
+    }
   })()
   const definedComponents = [...meta.keys()].sort()
-  const calibHints = calibrationHints(variance).filter(
+  const calibHints = calibrationHints(variance, 25, (ing) => {
+    const one = toBase(1, canonByName.get(ing)?.default_unit)
+    return one ? one.base : null
+  }).filter(
     (h) => !dismissedCalib.includes(h.ingredient)
   )
   const varianceMain = variance.filter((v) => v.variancePct != null)
@@ -800,6 +810,19 @@ export default function RecipesPage() {
               <span className="font-semibold text-terracotta">One setup step:</span> run{' '}
               <span className="font-mono">sql/018_recipe_meta.sql</span> in the Supabase SQL
               editor so components can record their batch yield. (Run it before sql/008.)
+            </div>
+          )}
+
+          {unpricedIngredients.length > 0 && (
+            <div className="mt-4">
+              <div className="text-[12.5px] font-semibold tracking-[0.02em] text-ink-muted">
+                Ingredients with no price yet
+              </div>
+              <p className="mt-1 text-[12.5px] text-ink-muted">
+                Not on a recent approved invoice, or bought by the case without a pack size. Dishes
+                using them show a “+” plate cost.
+              </p>
+              <p className="mt-2 text-[13px] text-ink-3">{unpricedIngredients.join(' · ')}</p>
             </div>
           )}
 

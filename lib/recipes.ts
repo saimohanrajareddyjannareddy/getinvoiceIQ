@@ -324,6 +324,7 @@ export function mergeComponentCosts(
         return null
       }
       const direct = purchaseCosts.get(line.ingredient_name)
+      if (!direct && FREE_INGREDIENTS.has(line.ingredient_name.trim().toLowerCase())) continue
       const directUsable = usableCostPerBase(direct)
       if (directUsable != null && direct?.baseKind === base.kind) {
         total += base.base * directUsable
@@ -371,7 +372,12 @@ export interface CalibrationHint {
  * multiplier that would align them. Purchases ≠ usage (stock
  * changes, waste), so a hint is a proposal, never an auto-edit.
  */
-export function calibrationHints(rows: VarianceRow[], minAbsPct = 25): CalibrationHint[] {
+export function calibrationHints(
+  rows: VarianceRow[],
+  minAbsPct = 25,
+  /** Base units in ONE purchase unit (1 lb = 453.6 g) per ingredient. */
+  purchaseUnitBase?: (ingredient: string) => number | null
+): CalibrationHint[] {
   return rows
     .filter(
       (r) =>
@@ -380,6 +386,13 @@ export function calibrationHints(rows: VarianceRow[], minAbsPct = 25): Calibrati
         r.variancePct != null &&
         Math.abs(r.variancePct) >= minAbsPct
     )
+    // You can't buy less than one unit: a 1 lb bag of salt against
+    // 0.33 lb of recipe use is a purchase size, not a portion error.
+    // Only hint when the gap is at least one whole purchase unit.
+    .filter((r) => {
+      const unit = purchaseUnitBase?.(r.ingredient)
+      return !unit || Math.abs(r.actualBase - r.theoreticalBase) >= unit
+    })
     .map((r) => ({
       ingredient: r.ingredient,
       factor: r.actualBase / r.theoreticalBase,
@@ -392,6 +405,9 @@ export function calibrationHints(rows: VarianceRow[], minAbsPct = 25): Calibrati
 }
 
 /** Plate cost for one recipe; lists ingredients that couldn't be priced. */
+/** Recipe ingredients that cost nothing when no purchase price exists. */
+export const FREE_INGREDIENTS = new Set(['water', 'tap water', 'ice', 'hot water'])
+
 export function plateCost(
   lines: RecipeLine[],
   costs: Map<string, IngredientCost>
@@ -402,6 +418,7 @@ export function plateCost(
     const base = toBase(line.quantity, line.unit)
     const cost = costs.get(line.ingredient_name)
     const usable = usableCostPerBase(cost)
+    if (!cost && FREE_INGREDIENTS.has(line.ingredient_name.trim().toLowerCase())) continue
     if (!base || !cost || usable == null || cost.baseKind !== base.kind) {
       missing.push(line.ingredient_name)
       continue
