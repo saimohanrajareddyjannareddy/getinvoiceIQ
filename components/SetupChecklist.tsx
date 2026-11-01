@@ -145,7 +145,7 @@ export default function SetupChecklist() {
         </button>
       </div>
       <p className="mb-4 text-[13px] text-ink-3">
-        {doneCount} of {steps.length} done — finish these and InvoiceIQ runs itself.
+        {doneCount} of {steps.length} done — finish these and getinvoiceIQ runs itself.
       </p>
       <div className="h-1.5 mb-5 overflow-hidden rounded-full bg-ink/[0.08]">
         <div

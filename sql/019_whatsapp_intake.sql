@@ -1,7 +1,7 @@
 -- ============================================================
 -- 019_whatsapp_intake.sql
 -- WhatsApp invoice intake: staff (or a supplier) send a receipt
--- photo / PDF to the InvoiceIQ WhatsApp number (Meta WhatsApp
+-- photo / PDF to the getinvoiceIQ WhatsApp number (Meta WhatsApp
 -- Business Platform, Cloud API). A webhook downloads the media,
 -- routes it to a restaurant by the SENDER's phone number, runs
 -- the shared parser, and files it in Review — WhatsApp is an

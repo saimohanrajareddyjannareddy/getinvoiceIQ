@@ -144,7 +144,7 @@ export default function SettingsPage() {
         no_code: 'Clover sent you back without an authorization code (step: code). Try again — and mention code "no_code" if it repeats.',
         no_state: 'Clover sent you back without the state value (step: state). Try again — and mention code "no_state" if it repeats.',
         cookie_missing: 'The connection cookie was lost on the way back from Clover (step: cookie). Try again in the same browser tab — and mention code "cookie_missing" if it repeats.',
-        state_mismatch: 'The connection state did not match (step: state check) — usually a stale tab. Close extra InvoiceIQ tabs and try again; mention code "state_mismatch" if it repeats.',
+        state_mismatch: 'The connection state did not match (step: state check) — usually a stale tab. Close extra getinvoiceIQ tabs and try again; mention code "state_mismatch" if it repeats.',
         exchange_no_token: 'Clover answered the token exchange without a token (step: exchange). Mention code "exchange_no_token" if it repeats.',
         exchange_network: 'The token exchange with Clover could not be reached (step: exchange). Try again; mention code "exchange_network" if it repeats.',
         db_error: 'Your token arrived but saving it failed (step: save). Mention code "db_error" if it repeats.',
@@ -781,7 +781,7 @@ export default function SettingsPage() {
 
         <p className="text-sm text-ink-3 mb-4">
           Lost a paper receipt? If your supplier emailed a copy — or sends invoices by
-          email from their app — connecting your inbox lets InvoiceIQ find and import them
+          email from their app — connecting your inbox lets getinvoiceIQ find and import them
           automatically. We only import emails that look like supplier invoices
           (known supplier senders, or attachments named like an invoice). Access is
           read-only: we never send, move, or delete your mail.
@@ -844,7 +844,7 @@ export default function SettingsPage() {
         <p className="text-sm text-ink-3 mb-4">
           Suppliers send invoices on WhatsApp; paper gets lost. Register the phone numbers
           of the people who handle receipts — owner, manager, whoever buys — and any invoice
-          photo or PDF they forward to the InvoiceIQ WhatsApp number is read automatically
+          photo or PDF they forward to the getinvoiceIQ WhatsApp number is read automatically
           and placed in your Review queue. Like email, WhatsApp is an outside channel:
           nothing counts until you approve it.
         </p>
@@ -1042,7 +1042,7 @@ export default function SettingsPage() {
         <div className="border border-red-100 rounded-lg p-4 bg-red-50/50 mt-4">
           <div className="font-display font-bold text-ink mb-1">Delete your account</div>
           <div className="text-sm text-ink-3 mb-3">
-            Permanently delete your InvoiceIQ account
+            Permanently delete your getinvoiceIQ account
             {accountEmail && (
               <>
                 {' '}(<span className="font-semibold text-ink">{accountEmail}</span>)

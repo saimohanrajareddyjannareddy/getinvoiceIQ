@@ -5,7 +5,7 @@ import { AlertCircle, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 /**
- * InvoiceIQ — self-serve account deletion, reachable trigger + confirm
+ * getinvoiceIQ — self-serve account deletion, reachable trigger + confirm
  * box. Extracted from the Settings danger zone so it can also live on
  * the first-run welcome: a brand-new account has no restaurant, and
  * the dashboard gate makes Settings unreachable until one exists —
@@ -71,7 +71,7 @@ export default function DeleteAccountBox({
     <div className="w-full basis-full rounded-lg border border-red-100 bg-red-50/50 p-4 text-left">
       <div className="mb-1 font-display font-bold text-ink">Delete your account</div>
       <div className="mb-3 text-sm text-ink-3">
-        Permanently delete your InvoiceIQ account
+        Permanently delete your getinvoiceIQ account
         {email && (
           <>
             {' '}(<span className="font-semibold text-ink">{email}</span>)

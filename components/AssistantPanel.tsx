@@ -6,7 +6,7 @@ import { useRestaurant } from '@/lib/restaurant'
 import { supabase } from '@/lib/supabase'
 
 /*
- * "Ask InvoiceIQ" — a slide-over chat with the read-only data agent
+ * "Ask getinvoiceIQ" — a slide-over chat with the read-only data agent
  * (app/api/assistant). It answers questions about the current
  * restaurant's invoices, purchases, prices and sales ("how much
  * chicken did I buy this week?"). The thread is kept per restaurant
@@ -104,7 +104,7 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
         <div className="flex items-center gap-2 border-b px-4 py-3.5">
           <Sparkles size={16} className="text-pop" />
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-ink">Ask InvoiceIQ</div>
+            <div className="text-sm font-semibold text-ink">Ask getinvoiceIQ</div>
             <div className="truncate text-[11px] text-ink-muted">
               {current?.name} — answers from your invoices & sales
             </div>

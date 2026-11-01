@@ -1,4 +1,4 @@
-# Clover sandbox → InvoiceIQ sales integration
+# Clover sandbox → getinvoiceIQ sales integration
 
 Pulls daily POS sales from the Clover sandbox test merchant into Supabase so
 the dashboard can show **food cost % = invoice spend ÷ net sales** (trailing

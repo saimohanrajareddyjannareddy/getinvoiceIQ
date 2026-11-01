@@ -8,7 +8,7 @@ import { friendlyAuthError } from '@/lib/auth-errors'
 import GoogleAuthButton from '@/components/GoogleAuthButton'
 
 /*
- * InvoiceIQ — Login page.
+ * getinvoiceIQ — Login page.
  * Left = sign-in form (email/password or Google), right = a product proof
  * panel on desktop. A compact proof strip carries the same facts on mobile.
  */
@@ -113,7 +113,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-[30px] text-center text-[14px] text-ink-3">
-            New to InvoiceIQ?{' '}
+            New to getinvoiceIQ?{' '}
             <Link href="/signup" className="font-semibold text-pop hover:text-pop-hover">
               Create an account
             </Link>

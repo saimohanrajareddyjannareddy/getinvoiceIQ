@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Terms of Service — getinvoiceIQ',
-  description: 'The terms that govern an InvoiceIQ account: the service, trials and billing, your data, and acceptable use.',
+  description: 'The terms that govern an getinvoiceIQ account: the service, trials and billing, your data, and acceptable use.',
 }
 
 const h2 = 'mt-10 font-serif text-[24px] font-normal text-ink'
@@ -25,9 +25,9 @@ export default function TermsPage() {
         <h1 className="font-display text-[40px] font-extrabold leading-none tracking-[-1px] text-ink">Terms of Service</h1>
         <p className="mt-3 text-[13.5px] text-ink-muted">Last updated October 30, 2026</p>
 
-        <h2 className={h2}>1. What InvoiceIQ is</h2>
+        <h2 className={h2}>1. What getinvoiceIQ is</h2>
         <p className={p}>
-          InvoiceIQ is software for restaurants that captures supplier invoices and receipts, extracts their line
+          getinvoiceIQ is software for restaurants that captures supplier invoices and receipts, extracts their line
           items, and turns them into spend, price, food-cost, and recipe information. Some readings are produced by
           automated systems. Readings that cannot be verified are placed in a review queue, and only invoices a user
           approves are counted in reports.
@@ -50,8 +50,8 @@ export default function TermsPage() {
 
         <h2 className={h2}>4. Your data and responsibilities</h2>
         <ul className="list-disc pl-6">
-          <li className={li}>You keep ownership of the invoices, recipes, and other material you add. You give InvoiceIQ permission to store and process that material only to run the service for you.</li>
-          <li className={li}>Automated readings can be wrong. You are responsible for reviewing queued items before relying on them for purchasing, pricing, tax, or accounting decisions. InvoiceIQ is an operational tool, not an accountant or tax adviser.</li>
+          <li className={li}>You keep ownership of the invoices, recipes, and other material you add. You give getinvoiceIQ permission to store and process that material only to run the service for you.</li>
+          <li className={li}>Automated readings can be wrong. You are responsible for reviewing queued items before relying on them for purchasing, pricing, tax, or accounting decisions. getinvoiceIQ is an operational tool, not an accountant or tax adviser.</li>
           <li className={li}>Only add material you have the right to share with the service, including supplier documents belonging to your business.</li>
         </ul>
 
@@ -64,14 +64,14 @@ export default function TermsPage() {
 
         <h2 className={h2}>6. Availability and changes</h2>
         <p className={p}>
-          We work to keep InvoiceIQ available and accurate, but the service is provided as-is without a promise that
+          We work to keep getinvoiceIQ available and accurate, but the service is provided as-is without a promise that
           it will be uninterrupted or error-free. Features may change as the product improves; material changes to
           these terms will be posted on this page with a new date.
         </p>
 
         <h2 className={h2}>7. Liability</h2>
         <p className={p}>
-          To the extent allowed by law, InvoiceIQ&apos;s total liability for claims arising from the service is limited to
+          To the extent allowed by law, getinvoiceIQ&apos;s total liability for claims arising from the service is limited to
           the amount you paid for the service in the three months before the claim. Neither party is liable for
           indirect or consequential losses such as lost profits.
         </p>

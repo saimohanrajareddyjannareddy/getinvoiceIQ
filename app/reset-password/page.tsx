@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { friendlyAuthError } from '@/lib/auth-errors'
 
 /**
- * InvoiceIQ — Reset password.
+ * getinvoiceIQ — Reset password.
  * Landing page for the recovery email. Supabase recovery links arrive with
  * either session tokens in the URL hash (implicit flow) or a one-time code
  * in the query string; this page accepts both, then lets the user set the

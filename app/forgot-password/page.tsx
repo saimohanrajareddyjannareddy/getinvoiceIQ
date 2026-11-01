@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { friendlyAuthError } from '@/lib/auth-errors'
 
 /**
- * InvoiceIQ — Forgot password.
+ * getinvoiceIQ — Forgot password.
  * Sends Supabase's recovery email; the link lands on /reset-password.
  * The sent state uses the same words whether or not the email has an
  * account, so the page never reveals which emails are registered.

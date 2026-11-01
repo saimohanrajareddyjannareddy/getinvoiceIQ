@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — getinvoiceIQ',
-  description: 'What InvoiceIQ collects, why, who processes it, and the choices an account owner has.',
+  description: 'What getinvoiceIQ collects, why, who processes it, and the choices an account owner has.',
 }
 
 const h2 = 'mt-10 font-serif text-[24px] font-normal text-ink'
@@ -58,7 +58,7 @@ export default function PrivacyPage() {
         <h2 className={h2}>Security</h2>
         <p className={p}>
           Connections to connected accounts use encrypted tokens. Access to each restaurant&apos;s records is enforced in
-          the database by membership, and traffic to InvoiceIQ is encrypted in transit. No system is perfect; if a
+          the database by membership, and traffic to getinvoiceIQ is encrypted in transit. No system is perfect; if a
           problem affects your data, we will tell you.
         </p>
 

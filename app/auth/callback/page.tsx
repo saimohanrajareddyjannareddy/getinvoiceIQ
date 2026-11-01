@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 /**
- * InvoiceIQ — OAuth return point.
+ * getinvoiceIQ — OAuth return point.
  * Google sign-in lands here after Supabase. Depending on the project's flow
  * the session arrives as a one-time code to exchange, as hash tokens the
  * Supabase client absorbs on load, or as an already-stored session. We

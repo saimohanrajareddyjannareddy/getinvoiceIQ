@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 /*
- * InvoiceIQ — public landing page.
+ * getinvoiceIQ — public landing page.
  * A server component written in the product's own voice: it leads with the
  * outcome, shows the product, prints the real $99 price, and answers the
  * questions an owner asks before trusting software with supplier paperwork.
@@ -74,7 +74,7 @@ export default function LandingPage() {
             <span className="font-serif normal-case italic tracking-normal text-pop">Before your accountant does.</span>
           </h1>
           <p className="mb-8 max-w-[520px] text-[19px] leading-[1.55] text-cream/70">
-            Snap a receipt, forward an email, or upload a PDF. InvoiceIQ turns supplier paperwork into food-cost
+            Snap a receipt, forward an email, or upload a PDF. getinvoiceIQ turns supplier paperwork into food-cost
             answers while the week is still fixable.
           </p>
           <div className="flex flex-col gap-[10px] sm:flex-row">
@@ -177,7 +177,7 @@ export default function LandingPage() {
           loop
           playsInline
           preload="metadata"
-          aria-label="InvoiceIQ in twelve seconds: snap a photo of any invoice, InvoiceIQ reads every line, and you know where every dollar goes."
+          aria-label="getinvoiceIQ in twelve seconds: snap a photo of any invoice, getinvoiceIQ reads every line, and you know where every dollar goes."
         />
       </div>
       </div>
@@ -242,7 +242,7 @@ export default function LandingPage() {
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11M18 3c-2 1-3 3-3 6 0 2 1 3 3 3v9M18 3v18" /></svg>
             </div>
             <h3 className="mb-2 font-serif text-[25px] font-normal text-ink">Recipes priced from real bills</h3>
-            <p className="text-[15px] leading-[1.55] text-ink-3">Start with the dish as your kitchen makes it. InvoiceIQ prices it from the latest approved invoices and keeps components like sauces costed too.</p>
+            <p className="text-[15px] leading-[1.55] text-ink-3">Start with the dish as your kitchen makes it. getinvoiceIQ prices it from the latest approved invoices and keeps components like sauces costed too.</p>
           </div>
 
           <div className="rounded-[16px] border border-ink/[0.08] bg-cream-surface px-7 py-[30px]">
@@ -397,7 +397,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-[1240px] px-6 pb-[84px] md:px-10">
         <div className="grid grid-cols-1 items-center gap-10 rounded-[22px] bg-coal px-7 py-12 text-cream md:px-12 lg:grid-cols-2">
           <div>
-            <div className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-pop">Ask InvoiceIQ</div>
+            <div className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-pop">Ask getinvoiceIQ</div>
             <h2 className="font-serif text-[34px] font-normal leading-[1.05] text-cream md:text-[44px]">Ask the question you would ask your bookkeeper.</h2>
             <p className="mt-5 max-w-[520px] text-[16px] leading-[1.6] text-cream/70">
               No report hunting. Ask about a vendor, a category, or a single ingredient and get an answer from the
@@ -509,7 +509,7 @@ export default function LandingPage() {
                 <div className="flex gap-[10px]"><span className="text-pop">✓</span> Review queue with totals recomputed</div>
                 <div className="flex gap-[10px]"><span className="text-pop">✓</span> Clover sales sync and food-cost view</div>
                 <div className="flex gap-[10px]"><span className="text-pop">✓</span> Price alerts at 5% and big moves at 20%</div>
-                <div className="flex gap-[10px]"><span className="text-pop">✓</span> Recipe costing and Ask InvoiceIQ</div>
+                <div className="flex gap-[10px]"><span className="text-pop">✓</span> Recipe costing and Ask getinvoiceIQ</div>
                 <div className="flex gap-[10px]"><span className="text-pop">✓</span> Multiple restaurants under one account</div>
               </div>
             </div>

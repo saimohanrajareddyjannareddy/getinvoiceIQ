@@ -3,7 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { fetchPriceAlerts } from '@/lib/alerts'
 
 /*
- * "Ask InvoiceIQ" — a read-only agent over ONE restaurant's books.
+ * "Ask getinvoiceIQ" — a read-only agent over ONE restaurant's books.
  *
  * The browser sends the signed-in user's access token; the route
  * verifies it, checks the user belongs to the restaurant, and only
@@ -304,7 +304,7 @@ export async function POST(req: NextRequest) {
   const today = body.today || new Date().toISOString().slice(0, 10)
   const weekday = body.weekday || ''
 
-  const system = `You are the InvoiceIQ assistant inside the dashboard of the restaurant "${rest?.name || 'this restaurant'}". You answer questions about THIS restaurant's invoices, purchases, item prices, suppliers and POS sales using the tools.
+  const system = `You are the getinvoiceIQ assistant inside the dashboard of the restaurant "${rest?.name || 'this restaurant'}". You answer questions about THIS restaurant's invoices, purchases, item prices, suppliers and POS sales using the tools.
 
 Today is ${weekday} ${today} (the restaurant's local date). Interpret relative dates against today: "this week" = Monday of this week through today; "last week" = the full previous Monday through Sunday; "this month" = the 1st through today; "last month" = the full previous month; "today" = today only. Always tell the user the exact date range you used.
 

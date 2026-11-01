@@ -307,7 +307,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 phones; the labelled pill returns at sm and up. */}
             <button
               type="button"
-              aria-label="Ask InvoiceIQ"
+              aria-label="Ask getinvoiceIQ"
               onClick={() => setAskOpen(true)}
               className="flex h-10 w-10 items-center justify-center rounded-[9px] border border-ink/[0.14] bg-cream-surface text-ink-2 transition hover:bg-cream-surface-alt sm:h-auto sm:w-auto sm:gap-2 sm:rounded-[10px] sm:px-3.5 sm:py-2.5 sm:text-[14px] sm:font-semibold"
             >

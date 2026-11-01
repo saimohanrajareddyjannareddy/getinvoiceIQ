@@ -132,7 +132,7 @@ async function processMessage(sb: SupabaseClient, msg: WaMessage) {
     })
     await reply(
       from,
-      "This number isn't registered with an InvoiceIQ restaurant yet, so I can't file receipts from it. Ask the owner to add your number in InvoiceIQ Settings → WhatsApp invoices."
+      "This number isn't registered with an getinvoiceIQ restaurant yet, so I can't file receipts from it. Ask the owner to add your number in getinvoiceIQ Settings → WhatsApp invoices."
     )
     return
   }
@@ -190,7 +190,7 @@ async function processMessage(sb: SupabaseClient, msg: WaMessage) {
     )
   } else if (result.outcome === 'duplicate') {
     await setLog(sb, wamid, { status: 'duplicate', detail: 'already imported' })
-    await reply(from, 'That receipt is already in InvoiceIQ — skipped it as a duplicate.')
+    await reply(from, 'That receipt is already in getinvoiceIQ — skipped it as a duplicate.')
   } else {
     await setLog(sb, wamid, { status: 'error', detail: result.message })
     await reply(

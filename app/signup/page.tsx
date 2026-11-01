@@ -8,7 +8,7 @@ import { friendlyAuthError } from '@/lib/auth-errors'
 import GoogleAuthButton from '@/components/GoogleAuthButton'
 
 /*
- * InvoiceIQ — Signup page.
+ * getinvoiceIQ — Signup page.
  * One email form creates the account AND names the first restaurant: the
  * restaurant name rides in Supabase user metadata, and lib/restaurant.tsx
  * auto-creates the restaurant from it on first sign-in. Google creates the
@@ -209,7 +209,7 @@ export default function SignupPage() {
                 <Link href="/terms" className="font-semibold text-ink-2 underline decoration-ink/30 underline-offset-2">Terms</Link>{' '}
                 and{' '}
                 <Link href="/privacy" className="font-semibold text-ink-2 underline decoration-ink/30 underline-offset-2">Privacy Policy</Link>.
-                The trial runs 14 days; after that, InvoiceIQ is $99 per location/month unless you cancel. No card is required today.
+                The trial runs 14 days; after that, getinvoiceIQ is $99 per location/month unless you cancel. No card is required today.
               </p>
 
               <div className="mt-7 rounded-[12px] border border-ink/[0.08] bg-cream-surface px-5 py-4 md:hidden">

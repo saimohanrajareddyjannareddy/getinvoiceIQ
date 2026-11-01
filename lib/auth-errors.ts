@@ -14,7 +14,7 @@ export function friendlyAuthError(message: string): string {
     return 'That email already has an account. Sign in instead — or reset the password if the account is yours.'
   }
   if (/provider is not enabled|unsupported provider/i.test(text)) {
-    return 'Google sign-in is not switched on for InvoiceIQ yet. Please use email and password for now.'
+    return 'Google sign-in is not switched on for getinvoiceIQ yet. Please use email and password for now.'
   }
   if (/password should be at least/i.test(text)) {
     return 'Use a password with at least 8 characters.'
