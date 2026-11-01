@@ -18,6 +18,7 @@ export type Restaurant = {
   is_active?: boolean
   subscription_status?: string
   trial_ends_at?: string
+  stripe_subscription_id?: string | null
 }
 
 type Ctx = {
@@ -46,7 +47,7 @@ async function fetchList(): Promise<Restaurant[]> {
   // RLS scopes this to restaurants the current user is a member of.
   const { data, error } = await supabase
     .from('restaurants')
-    .select('id, name, is_active, subscription_status, trial_ends_at')
+    .select('id, name, is_active, subscription_status, trial_ends_at, stripe_subscription_id')
     .eq('is_active', true)
     .order('name')
   if (error) {

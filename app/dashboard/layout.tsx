@@ -25,6 +25,7 @@ import { useAuth } from '@/lib/auth'
 import { useRestaurant } from '@/lib/restaurant'
 import AddRestaurantButton from '@/components/AddRestaurantButton'
 import DeleteAccountBox from '@/components/DeleteAccountBox'
+import TrialGate from '@/components/TrialGate'
 import ReviewBadge from '@/components/ReviewBadge'
 import { ActivityProvider } from '@/lib/activity'
 import ActivityPanel from '@/components/ActivityPanel'
@@ -59,11 +60,26 @@ function initials(name: string): string {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { session, loading: authLoading, signOut } = useAuth()
-  const { current, list, setCurrent, loading: restLoading } = useRestaurant()
+  const { current, list, setCurrent, refresh, loading: restLoading } = useRestaurant()
   // First-run state: signed in but no restaurant yet. The header's
   // data actions (search, alerts, Ask, add invoice) are meaningless
   // until a restaurant exists, so they hide and the welcome takes over.
   const noRestaurant = !restLoading && list.length === 0
+
+  // Trial gate (Sai's billing model: no card during the trial,
+  // never a charge before it ends — the card is asked for when the
+  // trial is over). A restaurant is gated when its trial date has
+  // passed and it has no live subscription: either it never
+  // subscribed (no Stripe id) or its subscription was cancelled
+  // (the id remains, the status gives it away — Stripe only flips
+  // to 'canceled' once the paid period has actually ended).
+  const hasLiveSub =
+    !!current?.stripe_subscription_id && current?.subscription_status !== 'canceled'
+  const trialExpired =
+    !!current &&
+    !hasLiveSub &&
+    !!current.trial_ends_at &&
+    new Date(current.trial_ends_at).getTime() < Date.now()
 
   // Time-of-day greeting is set after mount to avoid an SSR/client hydration
   // mismatch on the rendered hour.
@@ -282,7 +298,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Menu size={18} />
             </button>
             <div className="flex items-center gap-2 sm:gap-3">
-            {!noRestaurant && (<>
+            {!noRestaurant && !trialExpired && (<>
             <button
               type="button"
               aria-label="Search"
@@ -402,6 +418,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <main className="flex flex-1 items-center justify-center text-sm text-ink-muted">
             Loading restaurant…
           </main>
+        ) : trialExpired ? (
+          <TrialGate
+            restaurantId={current.id}
+            restaurantName={current.name}
+            trialEndsAt={current.trial_ends_at!}
+            email={session?.user?.email}
+            hasSubId={!!current.stripe_subscription_id}
+            onSubscribed={async () => {
+              // refresh() only reloads the list — re-select the
+              // current restaurant from it so this layout sees the
+              // new subscription and lifts the gate.
+              const fresh = await refresh()
+              const updated = fresh.find((r) => r.id === current.id)
+              if (updated) setCurrent(updated)
+            }}
+          />
         ) : (
           <main className="flex-1 overflow-auto pb-24 md:pb-10">{children}</main>
         )}
