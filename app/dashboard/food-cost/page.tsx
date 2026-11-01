@@ -78,8 +78,11 @@ const DAYS = WEEKS * 7 // 84
 const WINDOW_30 = 30
 const HIGH_THRESHOLD = 35
 
-const FOREST = '#1E3A2F'
-const TERRACOTTA = '#C4642D'
+// Chart palette — the app theme (coal + pop), matching Home and
+// Wastage. This page previously kept local pre-reskin constants
+// (forest #1E3A2F / terracotta #C4642D), so its bars never themed.
+const COAL = '#171310'
+const POP = '#EC4899'
 const GRID = 'rgba(26,23,19,0.08)'
 const TICK = { fontSize: 11, fontFamily: 'var(--font-plex-mono)', fill: '#8A8377' } as const
 
@@ -306,10 +309,10 @@ export default function FoodCostPage() {
                   <Tooltip contentStyle={tooltipStyle}
                     formatter={(v) => [`${Number(v).toFixed(1)}%`, 'Food cost %']}
                     labelFormatter={(l) => `Week of ${l}`} />
-                  <ReferenceLine y={HIGH_THRESHOLD} stroke={TERRACOTTA} strokeDasharray="5 4"
-                    label={{ value: `${HIGH_THRESHOLD}%`, ...TICK, fill: TERRACOTTA }} />
-                  <Line type="monotone" dataKey="pct" stroke={TERRACOTTA} strokeWidth={2.5}
-                    dot={{ r: 3, fill: TERRACOTTA }} connectNulls={false} />
+                  <ReferenceLine y={HIGH_THRESHOLD} stroke={POP} strokeDasharray="5 4"
+                    label={{ value: `${HIGH_THRESHOLD}%`, ...TICK, fill: POP }} />
+                  <Line type="monotone" dataKey="pct" stroke={POP} strokeWidth={2.5}
+                    dot={{ r: 3, fill: POP }} connectNulls={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -326,12 +329,12 @@ export default function FoodCostPage() {
                   <XAxis dataKey="label" tick={TICK} tickLine={false} axisLine={{ stroke: GRID }} />
                   <YAxis tick={TICK} tickLine={false} axisLine={false}
                     tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(30,58,47,0.06)' }}
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(23,19,16,0.06)' }}
                     formatter={(v, name) => [`$${Number(v).toLocaleString()}`, name === 'sales' ? 'Net sales' : 'Invoice spend']}
                     labelFormatter={(l) => `Week of ${l}`} />
                   <Legend wrapperStyle={{ fontSize: 12, fontFamily: 'var(--font-plex-mono)' }} />
-                  <Bar dataKey="sales" name="sales" fill={FOREST} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="spend" name="spend" fill={TERRACOTTA} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sales" name="sales" fill={COAL} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="spend" name="spend" fill={POP} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -354,11 +357,11 @@ export default function FoodCostPage() {
                       tickFormatter={(v: string) => v.length > 12 ? `${v.slice(0, 11)}…` : v} />
                     <YAxis tick={TICK} tickLine={false} axisLine={false}
                       tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
-                    <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(30,58,47,0.06)' }}
+                    <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(23,19,16,0.06)' }}
                       formatter={(v) => [`$${Number(v).toLocaleString()}`, 'Spend']} />
                     <Bar dataKey="total" radius={[6, 6, 0, 0]}>
                       {categories.map((_, i) => (
-                        <Cell key={i} fill={i === 0 ? TERRACOTTA : FOREST} />
+                        <Cell key={i} fill={i === 0 ? POP : COAL} />
                       ))}
                     </Bar>
                   </BarChart>
