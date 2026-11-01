@@ -21,7 +21,11 @@ const AuthContext = createContext<Ctx>({
 // flows + auth callbacks). Everything else requires a session.
 // (Static assets like /_next/*, /favicon.ico are served by Next directly and
 // never reach this client provider, so they don't need to be listed here.)
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password']
+// /privacy and /terms must stay public: Google OAuth verification and
+// Stripe both link to them for signed-out visitors. /reset-password
+// handles a missing session itself, and redirecting it before it can
+// exchange the recovery code breaks the reset link.
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/privacy', '/terms']
 const PUBLIC_PREFIXES = ['/auth', '/api/webhooks']
 
 function isPublicRoute(pathname: string): boolean {
