@@ -61,7 +61,7 @@ function BreakdownGroup({
                   className="h-full rounded-full"
                   style={{
                     width: `${total > 0 ? Math.max(2, (r.net / total) * 100) : 0}%`,
-                    background: '#1E3A2F',
+                    background: COAL,
                   }}
                 />
               </div>
