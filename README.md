@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# getinvoiceIQ
 
-## Getting Started
+**Invoice and food-cost software for independent restaurants.**
+Snap a receipt, forward an email, or send a WhatsApp photo. getinvoiceIQ reads every line,
+checks the math, and turns supplier paperwork into spend, price alerts, food cost % and
+recipe costing while the week is still fixable.
 
-First, run the development server:
+Live at **[getinvoiceiq.com](https://www.getinvoiceiq.com)** · $99 per location / month after a 14-day free trial.
+
+---
+
+## What it does
+
+| Area | What the owner gets |
+|---|---|
+| **Invoice capture** | Camera scanner, PDF/photo upload, Gmail inbox scan, WhatsApp intake. AI reads vendor, date, totals and every line item. |
+| **Review queue** | Invoices whose numbers don't add up (lines ≠ subtotal, qty × price ≠ line total, missing vendor/date) wait for a human. Email and WhatsApp imports always wait. Nothing lands in the books unchecked. |
+| **Price tracker & alerts** | Unit price per item over time; alerts when a supplier price moves. |
+| **Food cost %** | Food & drink spend ÷ POS net sales (Clover), trailing 30 days and weekly trend. Cleaning and packaging supplies are excluded. |
+| **Recipes & dish costing** | AI drafts recipes from the ingredients you actually buy; you confirm. Plate cost, food cost % and margin per dish, priced from your latest invoices. Pack sizes, usable yield and "1 on invoice =" make the costs honest. |
+| **Theoretical vs actual usage** | What sales × recipes say you should have used vs what you bought, in dollars, with calibration hints. |
+| **Vendors, wastage, Ask** | Vendor list and spend, purchased-vs-sold by category, and an assistant that answers questions from the restaurant's own records. |
+| **Multi-restaurant & team** | One login, many locations; invite staff per restaurant. Billing per location through Stripe. |
+
+## Tech stack
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth, RLS) ·
+Anthropic Claude (invoice reading, recipe drafts, Ask) · Stripe · Clover POS · Gmail API · WhatsApp Cloud API ·
+Vercel (hosting + cron)
+
+> This Next.js version has breaking changes from older releases. See `AGENTS.md` before writing code.
+
+## Run it locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+# create .env.local with the variables below
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Fonts are self-hosted in `app/fonts`, so `npm run build` works without internet access.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Used for |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser Supabase client |
+| `SUPABASE_SERVICE_KEY` | Server routes (billing, crons, intake) |
+| `ANTHROPIC_API_KEY` | Invoice parsing, recipe drafts, Ask |
+| `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` | Billing. `STRIPE_PRICE_ID` should be a `price_…` id |
+| `CLOVER_APP_ID`, `CLOVER_APP_SECRET`, `CLOVER_ENV` | Clover POS sales sync ([docs/clover.md](docs/clover.md)) |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Gmail invoice scanning |
+| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_INTAKE_NUMBER`, `WHATSAPP_GRAPH_VERSION` | WhatsApp invoice intake |
+| `TOKEN_ENCRYPTION_KEY` | Encrypts stored OAuth tokens |
+| `CRON_SECRET` | Protects the cron endpoints |
+| `MISE_EMAIL_WEBHOOK_SECRET` | Email-ingest webhook |
 
-## Learn More
+### Database
 
-To learn more about Next.js, take a look at the following resources:
+Apply the files in `sql/` in the Supabase SQL editor, in number order. They are idempotent.
+Exceptions to plain number order:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `018_recipe_meta.sql` runs **before** `008_recipe_usage_variance.sql`.
+- `020_ingredient_settings.sql`, then `021_unit_size.sql`, run after 008. Re-run both if you re-run 008.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`001_foundation.sql` builds on base tables (restaurants, user_restaurants, invoice_headers,
+invoice_lines) created by earlier setup migrations.
 
-## Deploy on Vercel
+## Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Pushing to `main` deploys to production on Vercel. Every other branch gets a preview URL.
+Crons (`vercel.json`): Gmail scan daily 13:30 UTC, Clover sync daily 06:00 UTC.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Docs
+
+- [Staff SOP — using getinvoiceIQ day to day](docs/staff-sop.md)
+- [Clover integration](docs/clover.md)
