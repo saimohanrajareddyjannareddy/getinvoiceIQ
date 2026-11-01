@@ -137,6 +137,18 @@ export default function LoginPage() {
       {/* RIGHT: visual (design-only, hidden on mobile) */}
       <div className="relative hidden flex-col justify-center bg-coal px-14 py-10 text-[#EDEFE8] md:flex">
         <div className="mx-auto w-full max-w-[440px]">
+          {/* Brand story — kitchen, receipt, priced ingredients, the mark. */}
+          <video
+            className="mx-auto mb-9 block w-[300px] max-w-full rounded-[16px] border border-white/10"
+            src="/story-square.mp4"
+            poster="/story-square-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="A restaurant kitchen, its receipt, and every ingredient priced — getinvoiceIQ, know where every dollar goes."
+          />
           {/* mini price tracker */}
           <div className="relative rounded-[16px] border border-[rgba(255,253,249,.12)] bg-[rgba(255,253,249,.05)] p-[22px]">
             <div className="mb-0.5 font-serif text-[21px] text-cream">Price tracker</div>

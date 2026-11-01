@@ -233,6 +233,18 @@ export default function SignupPage() {
       {/* RIGHT: visual (hidden on mobile) */}
       <div className="relative hidden flex-col justify-center bg-coal px-14 py-10 text-[#EDEFE8] md:flex">
         <div className="mx-auto w-full max-w-[440px]">
+          {/* Brand story — kitchen, receipt, priced ingredients, the mark. */}
+          <video
+            className="mx-auto mb-9 block w-[300px] max-w-full rounded-[16px] border border-white/10"
+            src="/story-square.mp4"
+            poster="/story-square-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="A restaurant kitchen, its receipt, and every ingredient priced — getinvoiceIQ, know where every dollar goes."
+          />
           <p className="mb-[10px] font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-pop">What you get</p>
           <p className="mb-[28px] font-serif text-[34px] font-normal leading-[1.25] text-cream">
             Open the books without opening a spreadsheet.
