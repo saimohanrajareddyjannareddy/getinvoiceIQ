@@ -1,8 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { SERIES, GRID, TICK, tooltipStyle, CURSOR } from '@/lib/chart-theme'
 
 type PriceEntry = { invoice_date: string; unit_price: number; unit_qty: number; case_qty: number }
 type TrackedItem = { item_name: string; display_name: string; category: string; prices: PriceEntry[]; current: number; previous: number; change: number; unit: string }
@@ -60,6 +62,66 @@ export default function PriceTrackerPage() {
     return true
   })
 
+  // ── Price trend graph ──────────────────────────────────────────
+  // The homepage mock promises this chart; here it is with real
+  // data. Trailing 6 weeks anchored on the newest purchase in the
+  // data, so the window always holds the restaurant's latest
+  // activity. An item's weekly point is its LAST unit price that
+  // week — the going rate at week's end; weeks with no purchase
+  // stay gaps, never invented values. Up to three items with at
+  // least two weekly points; the biggest mover wears pop, like
+  // the mock, and gets the callout chip.
+  const trend = useMemo(() => {
+    if (items.length === 0) return null
+    const DAY = 86400000
+    const parse = (s: string) => {
+      const [y, m, d] = s.split('-').map(Number)
+      return new Date(y, m - 1, d).getTime()
+    }
+    let anchor = 0
+    items.forEach(i => i.prices.forEach(p => {
+      const t = parse(p.invoice_date)
+      if (t > anchor) anchor = t
+    }))
+    const start = anchor - 41 * DAY
+    const buckets = Array.from({ length: 6 }, (_, w) => {
+      const from = start + w * 7 * DAY
+      return {
+        from,
+        label: new Date(from).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      }
+    })
+    type SeriesT = { item: TrackedItem; color: string; points: (number | null)[]; first: number; last: number; pct: number }
+    const candidates: SeriesT[] = []
+    items.forEach(item => {
+      const points: (number | null)[] = Array(6).fill(null)
+      item.prices.forEach(p => {
+        const idx = Math.floor((parse(p.invoice_date) - start) / (7 * DAY))
+        if (idx >= 0 && idx < 6) points[idx] = p.unit_price
+      })
+      const present = points.filter((v): v is number => v !== null)
+      if (present.length < 2) return
+      const first = present[0]
+      const last = present[present.length - 1]
+      candidates.push({ item, color: '', points, first, last, pct: ((last - first) / first) * 100 })
+    })
+    if (candidates.length === 0) return null
+    candidates.sort((a, b) =>
+      b.points.filter(v => v !== null).length - a.points.filter(v => v !== null).length ||
+      Math.abs(b.pct) - Math.abs(a.pct))
+    const top = candidates.slice(0, 3)
+    ;[...top]
+      .sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))
+      .forEach((s, i) => { s.color = SERIES[i] })
+    const rows = buckets.map((b, w) => {
+      const row: Record<string, string | number | null> = { label: b.label }
+      top.forEach(s => { row[s.item.item_name] = s.points[w] })
+      return row
+    })
+    const mover = [...top].sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))[0]
+    return { rows, series: top, mover }
+  }, [items])
+
   return (
     <div className="p-4 sm:p-8">
       <h1 className="font-display text-[28px] font-extrabold tracking-[-0.5px] text-ink mb-1">Price Tracker</h1>
@@ -73,6 +135,54 @@ export default function PriceTrackerPage() {
           </button>
         ))}
       </div>
+
+      {!loading && trend && (
+        <div className="mb-6 rounded-[14px] border border-ink/[0.08] bg-cream-surface p-5">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-[22px] text-ink">Price trend</h2>
+              <p className="mt-1 text-[13px] text-ink-muted">Unit price · trailing 6 weeks · last purchase each week</p>
+            </div>
+            {/* Biggest-mover callout, styled after the homepage mock. */}
+            <div className="rounded-[10px] bg-ink px-[13px] py-[10px] shadow-[0_14px_30px_-12px_rgba(0,0,0,0.55)]">
+              <div className="font-mono text-[13px] font-semibold text-[#F9A8D4]">
+                {trend.mover.item.display_name} {trend.mover.pct >= 0 ? '↑' : '↓'} {Math.abs(trend.mover.pct).toFixed(1)}% in 6 weeks
+              </div>
+              <div className="mt-[3px] text-[11px] text-[#C7C0B4]">
+                ${trend.mover.first.toFixed(2)} → ${trend.mover.last.toFixed(2)} {trend.mover.item.unit}
+              </div>
+            </div>
+          </div>
+          <div className="h-[260px] min-h-[260px] w-full" style={{ height: 260, maxHeight: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trend.rows} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+                <CartesianGrid stroke={GRID} vertical={false} />
+                <XAxis dataKey="label" tick={TICK} tickLine={false} axisLine={{ stroke: GRID }} interval={0} />
+                <YAxis tick={TICK} tickLine={false} axisLine={false} domain={['auto', 'auto']}
+                  tickFormatter={(v: number) => `$${Number(v.toFixed(2))}`} />
+                <Tooltip contentStyle={tooltipStyle} cursor={CURSOR}
+                  formatter={(v, name) => {
+                    const s = trend.series.find(x => x.item.item_name === name)
+                    return [`$${Number(v).toFixed(2)}${s ? ` ${s.item.unit}` : ''}`, s ? s.item.display_name : String(name)]
+                  }} />
+                {trend.series.map(s => (
+                  <Line key={s.item.item_name} type="monotone" dataKey={s.item.item_name}
+                    stroke={s.color} strokeWidth={2.5} dot={{ r: 3, fill: s.color, strokeWidth: 0 }}
+                    connectNulls={false} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+            {trend.series.map(s => (
+              <span key={s.item.item_name} className="inline-flex items-center gap-[7px] font-mono text-[11px] text-ink-3">
+                <span className="h-[3px] w-[10px] rounded-[2px]" style={{ background: s.color }} />
+                {s.item.display_name} <span className="text-ink-muted">{s.item.unit}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-cream-surface rounded-[14px] border border-ink/[0.08] overflow-hidden">
         <div className="hidden md:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>

@@ -6,8 +6,9 @@ import { useRestaurant } from '@/lib/restaurant'
 import {
   LineChart, Line, BarChart, Bar, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, ReferenceLine, Legend,
+  CartesianGrid, ReferenceLine,
 } from 'recharts'
+import { POP, COAL, GRID, TICK, tooltipStyle, CURSOR } from '@/lib/chart-theme'
 
 // Full Food cost % page: invoice spend ÷ POS net sales.
 // - KPIs on a trailing-30-day window (same convention as the Home card).
@@ -78,21 +79,8 @@ const DAYS = WEEKS * 7 // 84
 const WINDOW_30 = 30
 const HIGH_THRESHOLD = 35
 
-// Chart palette — the app theme (coal + pop), matching Home and
-// Wastage. This page previously kept local pre-reskin constants
-// (forest #1E3A2F / terracotta #C4642D), so its bars never themed.
-const COAL = '#171310'
-const POP = '#EC4899'
-const GRID = 'rgba(26,23,19,0.08)'
-const TICK = { fontSize: 11, fontFamily: 'var(--font-plex-mono)', fill: '#8A8377' } as const
-
-const tooltipStyle = {
-  borderRadius: 10,
-  border: '1px solid rgba(26,23,19,0.1)',
-  background: '#FFFDF9',
-  fontFamily: 'var(--font-plex-mono)',
-  fontSize: 12,
-}
+// Chart palette comes from lib/chart-theme — the shared family
+// (this page once kept private pre-theme constants and drifted).
 
 function localDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -324,19 +312,28 @@ export default function FoodCostPage() {
             <p className="mt-1 text-[13px] text-ink-muted">Weekly totals, trailing {WEEKS} weeks.</p>
             <div className="h-[260px] min-h-[260px] w-full" style={{ height: 260, maxHeight: 260 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeks} margin={{ top: 12, right: 12, left: -8, bottom: 0 }} barGap={2}>
+                <LineChart data={weeks} margin={{ top: 12, right: 12, left: -8, bottom: 0 }}>
                   <CartesianGrid stroke={GRID} vertical={false} />
                   <XAxis dataKey="label" tick={TICK} tickLine={false} axisLine={{ stroke: GRID }} />
                   <YAxis tick={TICK} tickLine={false} axisLine={false}
                     tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(23,19,16,0.06)' }}
-                    formatter={(v, name) => [`$${Number(v).toLocaleString()}`, name === 'sales' ? 'Net sales' : 'Invoice spend']}
+                  <Tooltip contentStyle={tooltipStyle} cursor={CURSOR}
+                    formatter={(v, name) => [`$${Number(v).toLocaleString()}`, name]}
                     labelFormatter={(l) => `Week of ${l}`} />
-                  <Legend wrapperStyle={{ fontSize: 12, fontFamily: 'var(--font-plex-mono)' }} />
-                  <Bar dataKey="sales" name="sales" fill={COAL} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="spend" name="spend" fill={POP} radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Line type="monotone" dataKey="sales" name="Net sales" stroke={COAL} strokeWidth={2.5}
+                    dot={{ r: 3, fill: COAL, strokeWidth: 0 }} connectNulls={false} />
+                  <Line type="monotone" dataKey="spend" name="Invoice spend" stroke={POP} strokeWidth={2.5}
+                    dot={{ r: 3, fill: POP, strokeWidth: 0 }} connectNulls={false} />
+                </LineChart>
               </ResponsiveContainer>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+              <span className="inline-flex items-center gap-[7px] font-mono text-[11px] text-ink-3">
+                <span className="h-[3px] w-[10px] rounded-[2px]" style={{ background: POP }} />Invoice spend
+              </span>
+              <span className="inline-flex items-center gap-[7px] font-mono text-[11px] text-ink-3">
+                <span className="h-[3px] w-[10px] rounded-[2px]" style={{ background: COAL }} />Net sales
+              </span>
             </div>
           </div>
 

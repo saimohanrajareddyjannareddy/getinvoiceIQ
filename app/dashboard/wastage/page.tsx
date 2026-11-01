@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts'
 import { Link2, AlertTriangle } from 'lucide-react'
 
 type CategoryRow = { category: string; purchased: number; sold: number | null }
@@ -142,6 +142,7 @@ export default function WastagePage() {
           <h2 className="font-serif text-[20px] text-ink mb-4">Spend by Category</h2>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data}>
+              <CartesianGrid stroke="rgba(26,23,19,0.08)" vertical={false} />
               <XAxis dataKey="category" tick={{ fontSize: 11, fontFamily: 'var(--font-plex-mono)', fill: '#8A8377' }} tickLine={false} axisLine={{ stroke: 'rgba(26,23,19,0.1)' }} />
               <YAxis tick={{ fontSize: 11, fontFamily: 'var(--font-plex-mono)', fill: '#8A8377' }} tickLine={false} axisLine={false} tickFormatter={v => `$${v}`} />
               <Tooltip formatter={(v) => `$${Number(v ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />

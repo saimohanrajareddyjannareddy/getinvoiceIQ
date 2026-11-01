@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
-import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import SetupChecklist from '@/components/SetupChecklist'
 import { fetchPriceAlerts, type PriceAlert } from '@/lib/alerts'
 
@@ -242,6 +242,7 @@ export default function DashboardPage() {
           <div className="h-[240px] min-h-[240px] w-full" style={{ height: 240, maxHeight: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                <CartesianGrid stroke="rgba(26,23,19,0.08)" vertical={false} />
                 <XAxis
                   dataKey="category"
                   tick={{ fontSize: 11, fontFamily: 'var(--font-plex-mono)', fill: '#8A8377' }}
