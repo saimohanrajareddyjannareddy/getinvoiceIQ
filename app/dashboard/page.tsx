@@ -8,6 +8,7 @@ import SetupChecklist from '@/components/SetupChecklist'
 import { fetchPriceAlerts, type PriceAlert } from '@/lib/alerts'
 import { SERIES, GRID, TICK, tooltipStyle, CURSOR } from '@/lib/chart-theme'
 import { buildPriceTrend, type TrendItem } from '@/lib/price-trend'
+import { nonFoodByHeader } from '@/lib/food-cost'
 
 type RecentInvoice = { id: string; invoice_date: string; invoice_number: string; vendor: string; total: number }
 type SpendTrend = {
@@ -252,11 +253,16 @@ export default function DashboardPage() {
     const t30end = localDate(new Date())
     const [sales30, spend30] = await Promise.all([
       supabase.from('daily_sales').select('net_cents').eq('restaurant_id', restaurantId).gte('date', t30start).lte('date', t30end),
-      supabase.from('invoice_headers').select('total, review_status').eq('restaurant_id', restaurantId).gte('invoice_date', t30start).lte('invoice_date', t30end),
+      supabase.from('invoice_headers').select('id, total, review_status').eq('restaurant_id', restaurantId).gte('invoice_date', t30start).lte('invoice_date', t30end),
     ])
     if (stale()) return
     const netSales30 = (sales30.data ?? []).reduce((s: number, r: { net_cents?: number | null }) => s + (r.net_cents || 0), 0) / 100
-    const spend30Total = (spend30.data ?? []).reduce((s: number, h: { total?: number | null; review_status?: string | null }) => s + (h.review_status === 'needs_review' ? 0 : h.total || 0), 0)
+    // Food cost leaves out supplies (cleaning, packaging) — lib/food-cost.
+    const approved30 = ((spend30.data ?? []) as { id: string; total?: number | null; review_status?: string | null }[])
+      .filter((h) => h.review_status !== 'needs_review')
+    const nonFood30 = await nonFoodByHeader(supabase, approved30.map((h) => h.id))
+    if (stale()) return
+    const spend30Total = approved30.reduce((s, h) => s + (h.total || 0) - (nonFood30.get(h.id) ?? 0), 0)
     setFoodCostPct(netSales30 > 0 ? (spend30Total / netSales30) * 100 : null)
 
     // Price-move alerts for the home card (top 3 shown, full list on

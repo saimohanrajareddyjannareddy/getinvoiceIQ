@@ -31,6 +31,7 @@ import {
   type VarianceRow,
 } from '@/lib/recipes'
 import IngredientSettingsCard from '@/components/IngredientSettingsCard'
+import { isNonFood } from '@/lib/food-cost'
 
 // Recipes & dish costing (stage 1): dishes come from POS sales,
 // the AI drafts a per-serving recipe from the restaurant's own
@@ -525,14 +526,37 @@ export default function RecipesPage() {
     }
   })()
   const definedComponents = [...meta.keys()].sort()
-  const calibHints = calibrationHints(variance, 25, (ing) => {
+  // Recipe unit kinds per ingredient (g / ml / each). When a recipe
+  // measures by weight but invoices count bunches or cans, the two
+  // sides aren't comparable — that produced "cilantro 332 ct vs 1 ct,
+  // -$4,097". Such rows are listed separately, not computed.
+  const recipeKinds = new Map<string, Set<string>>()
+  for (const lines of recipes.values()) {
+    for (const l of lines) {
+      const k = unitKind(l.unit)
+      if (!k) continue
+      const set = recipeKinds.get(l.ingredient_name) ?? new Set<string>()
+      set.add(k)
+      recipeKinds.set(l.ingredient_name, set)
+    }
+  }
+  const unitMismatch = (v: VarianceRow): boolean => {
+    const buyKind = unitKind(canonByName.get(v.ingredient)?.default_unit)
+    const kinds = recipeKinds.get(v.ingredient)
+    return !!buyKind && !!kinds && [...kinds].some((k) => k !== buyKind)
+  }
+  const varianceComparable = variance.filter((v) => v.variancePct != null && !unitMismatch(v))
+  const varianceMain = varianceComparable.filter((v) => v.actualBase > 0)
+  const varianceNotBought = varianceComparable.filter((v) => v.actualBase <= 0)
+  const varianceMismatch = variance.filter((v) => v.variancePct != null && unitMismatch(v))
+  const varianceNoRecipe = variance.filter((v) => v.variancePct == null && v.actualBase > 0)
+  const dishesWithRecipe = dishes.filter((d) => (recipes.get(d.menuItemName)?.length ?? 0) > 0).length
+  const calibHints = calibrationHints(varianceMain, 25, (ing) => {
     const one = toBase(1, canonByName.get(ing)?.default_unit)
     return one ? one.base : null
   }).filter(
     (h) => !dismissedCalib.includes(h.ingredient)
   )
-  const varianceMain = variance.filter((v) => v.variancePct != null)
-  const varianceNoRecipe = variance.filter((v) => v.variancePct == null && v.actualBase > 0)
   const impactOf = (v: VarianceRow): number | null => {
     const cost = costs.get(v.ingredient)
     const item = canonByName.get(v.ingredient)
@@ -548,6 +572,8 @@ export default function RecipesPage() {
     return [...names]
       .map((n) => canonByName.get(n))
       .filter((it): it is CanonicalItem => !!it)
+      // Gloves, containers, soap never go on a plate.
+      .filter((it) => !isNonFood(it.category))
       .map((item) => ({ item, cost: costs.get(item.name), needsPack: needsPack.has(item.name) }))
       .sort((a, b) =>
         a.needsPack !== b.needsPack ? (a.needsPack ? -1 : 1) : a.item.name.localeCompare(b.item.name)
@@ -1105,7 +1131,20 @@ export default function RecipesPage() {
               SQL editor — it creates the usage_variance() function this section reads. Then
               refresh.
             </div>
-          ) : varianceMain.length === 0 ? (
+          ) : null}
+
+          {!varianceError && dishes.length > 0 && dishesWithRecipe < dishes.length && (
+            <div className="mt-4 rounded-[10px] border border-ink/10 bg-cream px-4 py-3 text-[12.5px] text-ink-3">
+              <span className="font-semibold text-ink">
+                {dishesWithRecipe} of {dishes.length} dishes have a recipe.
+              </span>{' '}
+              “Should have used” only counts those dishes, so an ingredient that other dishes also
+              use will look over-bought until their recipes exist. Draft recipes for your top
+              sellers first.
+            </div>
+          )}
+
+          {varianceError ? null : varianceMain.length === 0 ? (
             <p className="mt-4 text-[13.5px] text-ink-muted">
               {hasConfirmedRecipe
                 ? 'No ingredient overlaps yet between your recipes and purchases in this period.'
@@ -1159,6 +1198,30 @@ export default function RecipesPage() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {!varianceError && varianceNotBought.length > 0 && (
+            <p className="mt-4 text-[12.5px] text-ink-muted">
+              <span className="font-semibold text-ink">In recipes, not bought this period:</span>{' '}
+              {varianceNotBought.map((v) => v.ingredient).join(' · ')}
+              <span className="block mt-1">
+                Usually bought earlier, still in stock, or the invoice line isn’t matched to this
+                ingredient yet.
+              </span>
+            </p>
+          )}
+
+          {!varianceError && varianceMismatch.length > 0 && (
+            <p className="mt-4 text-[12.5px] text-ink-muted">
+              <span className="font-semibold text-ink">Units don’t match, so not compared:</span>{' '}
+              {varianceMismatch
+                .map((v) => `${v.ingredient} (bought by ${(canonByName.get(v.ingredient)?.default_unit ?? '').toLowerCase()})`)
+                .join(' · ')}
+              <span className="block mt-1">
+                The recipe measures these by weight or volume, but invoices count them (bunches,
+                cans, cartons).
+              </span>
+            </p>
           )}
 
           {!varianceError && varianceNoRecipe.length > 0 && (
