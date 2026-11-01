@@ -29,6 +29,9 @@ export interface SettingsRow {
   needsPack: boolean
 }
 
+// 'each' is stored as-is; staff think of it as a count (bunches, cans, pieces).
+const UNIT_LABELS: Record<string, string> = { each: 'ct (count)' }
+
 const card = 'rounded-[14px] border border-ink/[0.08] bg-cream-surface p-[22px]'
 const input =
   'w-[84px] rounded-md border border-ink/15 bg-cream-surface px-2 py-1 text-right font-mono text-[13px] text-ink'
@@ -130,7 +133,9 @@ export default function IngredientSettingsCard({
         yield</strong>: what’s left after peeling and trimming (onion ≈ 90%, whole chicken ≈ 70%) —
         recipes use the usable amount, so you pay for the loss on every plate.{' '}
         <strong className="text-ink-2">1 on invoice =</strong>: when the invoice says “1” for a
-        whole jug, bag or bunch, enter what it really is (oil: 1 = 35 lb; cilantro: 1 = 3 oz).
+        whole jug, case or bunch, enter what it really is: oil 1 = 35 lb; a cilantro case 1 = 20 ct
+        (bunches). If your recipes measure it by weight instead, use the weight (20 bunches × 3 oz
+        = 60 oz).
       </p>
       {!missing && unitSizeMissing && (
         <div className="mt-4 rounded-[10px] border border-terracotta/30 bg-terracotta/[0.08] px-4 py-3 text-[13px] text-ink">
@@ -233,7 +238,7 @@ export default function IngredientSettingsCard({
                             className="ml-1 rounded-md border border-ink/15 bg-cream-surface px-1 py-1 text-[12px] text-ink"
                           >
                             {UNIT_SIZE_UNITS.map((u) => (
-                              <option key={u} value={u}>{u}</option>
+                              <option key={u} value={u}>{UNIT_LABELS[u] ?? u}</option>
                             ))}
                           </select>
                         </td>
