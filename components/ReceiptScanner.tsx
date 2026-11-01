@@ -214,7 +214,7 @@ export default function ReceiptScanner({
       if (timer) clearInterval(timer)
       stopTracks()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [])
 
   function manualCapture() {

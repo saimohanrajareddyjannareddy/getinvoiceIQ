@@ -97,7 +97,7 @@ function EntryRow({ e, now, onDismiss }: { e: ActivityEntry; now: number; onDism
 export default function ActivityPanel() {
   const { entries, runningCount, dismiss, clearFinished } = useActivity()
   const [open, setOpen] = useState(false)
-  const [now, setNow] = useState(Date.now())
+  const [now, setNow] = useState(() => Date.now())
 
   // Tick once a second while anything runs, so elapsed times move.
   useEffect(() => {

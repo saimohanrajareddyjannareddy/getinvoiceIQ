@@ -30,18 +30,6 @@ type ParsedInvoice = {
 
 const CATEGORIES = ['Proteins', 'Produce', 'Dairy', 'Dry Goods', 'Beverages', 'Packaging', 'Cleaning', 'Credits', 'Other']
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Proteins: 'bg-red-100 text-red-700',
-  Produce: 'bg-green-100 text-green-700',
-  Dairy: 'bg-blue-100 text-blue-700',
-  'Dry Goods': 'bg-yellow-100 text-yellow-700',
-  Beverages: 'bg-cyan-100 text-cyan-700',
-  Packaging: 'bg-gray-100 text-gray-600',
-  Cleaning: 'bg-teal-100 text-teal-700',
-  Credits: 'bg-rose-100 text-rose-700',
-  Other: 'bg-amber-100 text-amber-700',
-}
-
 /* reviewFlagsFor lives in lib/review-flags (shared with the email scanner).
    normKey + the category-memory helpers live in lib/category-memory
    (shared with the email scanner and the WhatsApp intake). */
@@ -370,7 +358,7 @@ export default function UploadPage() {
     if (!id || memoryAppliedRef.current === id) return
     memoryAppliedRef.current = id
     setParsed((prev) => (prev ? applyCategoryMemory(prev, categoryMemory) : prev))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [categoryMemory, parsed, status])
 
   const netTotal = parsed ? parsed.items.reduce((s, i) => s + (i.total || 0), 0) : 0

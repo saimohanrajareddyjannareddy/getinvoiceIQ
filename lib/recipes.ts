@@ -12,9 +12,10 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * to grams / ml / each, and a purchased line's quantity is its
  * unit_qty expressed in the canonical item's default_unit — the
  * same formula usage_variance() uses, so plate costs and the
- * variance page can never disagree. (Case purchases store their
- * count in case_qty with unit_qty = 0, so they don't price yet —
- * that needs pack sizes on canonical_items.)
+ * variance page can never disagree. Case purchases store their
+ * count in case_qty with unit_qty = 0; they price once the
+ * restaurant sets a pack size (ingredient_settings, sql/020).
+ * Plate costs also divide by the usable-yield % from that table.
  */
 
 export interface DishSales {
@@ -39,9 +40,65 @@ export interface CanonicalItem {
 }
 
 export interface IngredientCost {
-  /** Cost per base unit (g / ml / each); null when unpriced. */
+  /** PURCHASE cost per base unit (g / ml / each); null when unpriced. */
   costPerBase: number | null
   baseKind: BaseKind | null
+  /** Usable share after trim / peel loss, 1–100. Missing = 100. */
+  yieldPct?: number
+}
+
+/**
+ * Cost per USABLE base unit: what a recipe gram actually costs once
+ * trim loss is paid for. Recipes are written in usable quantities, so
+ * plate costs use this; purchase-side math (variance $) uses
+ * costPerBase.
+ */
+export function usableCostPerBase(c: IngredientCost | undefined): number | null {
+  if (!c || c.costPerBase == null) return null
+  const y = c.yieldPct && c.yieldPct > 0 ? Math.min(c.yieldPct, 100) : 100
+  return c.costPerBase / (y / 100)
+}
+
+export interface IngredientSetting {
+  /** Units of the item's default_unit in one case; null = not set. */
+  packQty: number | null
+  yieldPct: number
+}
+
+/**
+ * Per-restaurant pack sizes and yields (sql/020), keyed by canonical
+ * item id. `missing` is true when the table doesn't exist yet — the
+ * page shows a setup notice and costing works as before.
+ */
+export async function fetchIngredientSettings(
+  sb: SupabaseClient,
+  restaurantId: string
+): Promise<{ settings: Map<string, IngredientSetting>; missing: boolean }> {
+  const settings = new Map<string, IngredientSetting>()
+  const { data, error } = await sb
+    .from('ingredient_settings')
+    .select('canonical_item_id, pack_qty, yield_pct')
+    .eq('restaurant_id', restaurantId)
+  if (error) return { settings, missing: true }
+  for (const r of (data ?? []) as { canonical_item_id: string; pack_qty: number | null; yield_pct: number | null }[]) {
+    settings.set(r.canonical_item_id, {
+      packQty: r.pack_qty != null ? Number(r.pack_qty) : null,
+      yieldPct: r.yield_pct != null ? Number(r.yield_pct) : 100,
+    })
+  }
+  return { settings, missing: false }
+}
+
+/** Units bought on one invoice line, or null when it can't be counted. */
+export function purchasedQty(
+  line: { unit_qty: number | null; case_qty: number | null },
+  packQty: number | null | undefined
+): number | null {
+  const u = Number(line.unit_qty ?? 0)
+  if (u > 0) return u
+  const cases = Number(line.case_qty ?? 0)
+  if (cases > 0 && packQty && packQty > 0) return cases * packQty
+  return null
 }
 
 export type BaseKind = 'g' | 'ml' | 'each'
@@ -142,7 +199,10 @@ export async function fetchCanonicalItems(
 export async function fetchIngredientCosts(
   sb: SupabaseClient,
   restaurantId: string,
-  canonical: CanonicalItem[]
+  canonical: CanonicalItem[],
+  settings: Map<string, IngredientSetting> = new Map(),
+  /** Filled with names whose newest purchases are by the case with no pack size. */
+  needsPack?: Set<string>
 ): Promise<Map<string, IngredientCost>> {
   const costs = new Map<string, IngredientCost>()
   const byId = new Map(canonical.map((c) => [c.id, c]))
@@ -178,12 +238,22 @@ export async function fetchIngredientCosts(
     const item = byId.get(l.canonical_item_id)
     if (!item || costs.has(item.name)) continue
     if (!l.total || l.total <= 0) continue
-    const qty = l.unit_qty ?? 0
-    if (qty <= 0) continue
+    const setting = settings.get(item.id)
+    const qty = purchasedQty(l, setting?.packQty)
+    if (qty == null) {
+      if (Number(l.case_qty ?? 0) > 0) needsPack?.add(item.name)
+      continue
+    }
     const base = toBase(qty, item.default_unit)
     if (!base || base.base <= 0) continue
-    costs.set(item.name, { costPerBase: l.total / base.base, baseKind: base.kind })
+    costs.set(item.name, {
+      costPerBase: l.total / base.base,
+      baseKind: base.kind,
+      yieldPct: setting?.yieldPct ?? 100,
+    })
   }
+  // An item priced from an older unit purchase no longer needs asking.
+  if (needsPack) for (const name of [...needsPack]) if (costs.has(name)) needsPack.delete(name)
   return costs
 }
 
@@ -254,8 +324,9 @@ export function mergeComponentCosts(
         return null
       }
       const direct = purchaseCosts.get(line.ingredient_name)
-      if (direct?.costPerBase != null && direct.baseKind === base.kind) {
-        total += base.base * direct.costPerBase
+      const directUsable = usableCostPerBase(direct)
+      if (directUsable != null && direct?.baseKind === base.kind) {
+        total += base.base * directUsable
         continue
       }
       const sub = componentCost(line.ingredient_name, depth + 1, visiting)
@@ -330,11 +401,12 @@ export function plateCost(
   for (const line of lines) {
     const base = toBase(line.quantity, line.unit)
     const cost = costs.get(line.ingredient_name)
-    if (!base || !cost || cost.costPerBase == null || cost.baseKind !== base.kind) {
+    const usable = usableCostPerBase(cost)
+    if (!base || !cost || usable == null || cost.baseKind !== base.kind) {
       missing.push(line.ingredient_name)
       continue
     }
-    total += base.base * cost.costPerBase
+    total += base.base * usable
   }
   return { total, missing }
 }

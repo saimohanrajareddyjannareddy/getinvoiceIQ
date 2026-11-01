@@ -17,20 +17,18 @@ const AuthContext = createContext<Ctx>({
   signOut: async () => {},
 })
 
-// Public routes — viewable without authentication (marketing landing + auth
-// flows + auth callbacks). Everything else requires a session.
-// (Static assets like /_next/*, /favicon.ico are served by Next directly and
-// never reach this client provider, so they don't need to be listed here.)
-// /privacy and /terms must stay public: Google OAuth verification and
-// Stripe both link to them for signed-out visitors. /reset-password
-// handles a missing session itself, and redirecting it before it can
-// exchange the recovery code breaks the reset link.
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/privacy', '/terms']
-const PUBLIC_PREFIXES = ['/auth', '/api/webhooks']
+// Only the signed-in app needs a session: everything under /dashboard.
+// Every other path is public — the marketing page, auth flows, legal
+// pages (Google OAuth verification and Stripe link to /privacy and
+// /terms for signed-out visitors), /reset-password (which handles a
+// missing session itself and must exchange its recovery code before
+// any redirect), and unknown paths, which should show the 404 page
+// rather than bounce to /login. Data is protected by RLS either way;
+// this guard only decides where the browser goes.
+const PRIVATE_PREFIXES = ['/dashboard']
 
 function isPublicRoute(pathname: string): boolean {
-  if (PUBLIC_ROUTES.includes(pathname)) return true
-  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
+  return !PRIVATE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

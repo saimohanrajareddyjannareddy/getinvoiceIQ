@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
@@ -94,17 +94,16 @@ function shortLabel(iso: string) {
 export default function FoodCostPage() {
   const { current } = useRestaurant()
   const restaurantId = current?.id ?? null
+  const reqSeq = useRef(0)
   const [days, setDays] = useState<DayRow[]>([])
   const [categories, setCategories] = useState<CategorySpend[]>([])
   const [breakdowns, setBreakdowns] = useState<BreakdownRow[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!restaurantId) return
-    load()
-  }, [restaurantId])
 
   async function load() {
+    const seq = ++reqSeq.current
+    const stale = () => seq !== reqSeq.current
     setLoading(true)
     const end = localDate(new Date())
     const start = localDate(new Date(Date.now() - (DAYS - 1) * 24 * 3600 * 1000))
@@ -120,6 +119,7 @@ export default function FoodCostPage() {
       supabase.from('sales_breakdowns').select('dimension, label, net_cents, order_count')
         .eq('restaurant_id', restaurantId).gte('date', start30).lte('date', end),
     ])
+    if (stale()) return
 
     const bdMap = new Map<string, BreakdownRow>()
     for (const r of (bdRes.data ?? []) as { dimension: string; label: string; net_cents: number; order_count: number }[]) {
@@ -154,6 +154,7 @@ export default function FoodCostPage() {
     if (headerIds30.length > 0) {
       const { data: lines } = await supabase.from('invoice_lines')
         .select('category, total').in('header_id', headerIds30)
+      if (stale()) return
       const catMap: Record<string, number> = {}
       for (const l of (lines ?? []) as { category: string | null; total: number | null }[]) {
         const c = l.category || 'Other'
@@ -169,6 +170,16 @@ export default function FoodCostPage() {
     }
     setLoading(false)
   }
+
+  // Re-load when the restaurant (or range) changes. reqSeq makes a
+  // slower, older request drop its results instead of overwriting
+  // the newer one (switching restaurants used to be able to show
+  // the previous restaurant's numbers).
+  useEffect(() => {
+    if (!restaurantId) return
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load reads current state; these are its inputs
+  }, [restaurantId])
 
   // ---- Derived ----
   const last30 = days.slice(-WINDOW_30)

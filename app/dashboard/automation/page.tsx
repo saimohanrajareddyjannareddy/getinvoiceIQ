@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRestaurant } from '@/lib/restaurant'
 import { Activity, CheckCircle2, AlertTriangle, Clock, RefreshCcw } from 'lucide-react'
@@ -30,6 +30,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 export default function AutomationPage() {
   const { current } = useRestaurant()
   const restaurantId = current?.id ?? null
+  const reqSeq = useRef(0)
 
   const [loading, setLoading] = useState(true)
   const [countsByStatus, setCountsByStatus] = useState<Record<Status, number>>({
@@ -50,12 +51,10 @@ export default function AutomationPage() {
   const [vendorFreshness, setVendorFreshness] = useState<VendorFreshness[]>([])
   const [failures, setFailures] = useState<RecentFailure[]>([])
 
-  useEffect(() => {
-    if (!restaurantId) return
-    load()
-  }, [restaurantId])
 
   async function load() {
+    const seq = ++reqSeq.current
+    const stale = () => seq !== reqSeq.current
     setLoading(true)
     const weekAgoIso = new Date(Date.now() - 7 * DAY_MS).toISOString()
     const monthAgoIso = new Date(Date.now() - 30 * DAY_MS).toISOString()
@@ -87,6 +86,7 @@ export default function AutomationPage() {
         .order('uploaded_at', { ascending: false })
         .limit(20),
     ])
+    if (stale()) return
 
     if (filesAll.error) console.error('invoice_files query failed:', filesAll.error)
     if (filesWeek.error) console.error('invoice_files week query failed:', filesWeek.error)
@@ -166,6 +166,15 @@ export default function AutomationPage() {
 
     setLoading(false)
   }
+
+  // Re-load when the restaurant changes. reqSeq makes a slower, older
+  // request (or an earlier Refresh click) drop its results instead of
+  // overwriting the newer one.
+  useEffect(() => {
+    if (!restaurantId) return
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load reads current state; restaurantId is its input
+  }, [restaurantId])
 
   const inFlight = countsByStatus.pending + countsByStatus.processing
   const totalAll =

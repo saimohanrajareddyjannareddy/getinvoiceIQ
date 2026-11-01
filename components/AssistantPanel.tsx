@@ -123,7 +123,7 @@ export default function AssistantPanel({ open, onClose }: { open: boolean; onClo
           {messages.length === 0 ? (
             <div>
               <p className="text-sm text-ink-muted">
-                Ask me anything about this restaurant's purchases, prices, suppliers or sales. For example:
+                Ask me anything about this restaurant’s purchases, prices, suppliers or sales. For example:
               </p>
               <div className="mt-3 flex flex-col gap-2">
                 {SUGGESTIONS.map((s) => (
