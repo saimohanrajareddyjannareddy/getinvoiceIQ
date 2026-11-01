@@ -63,6 +63,30 @@ export interface IngredientSetting {
   /** Units of the item's default_unit in one case; null = not set. */
   packQty: number | null
   yieldPct: number
+  /** What ONE invoice unit really is ("1 = 35 lb"); null = default unit. */
+  unitSize: number | null
+  unitSizeUnit: string | null
+}
+
+export const UNIT_SIZE_UNITS = ['lb', 'oz', 'g', 'kg', 'gal', 'floz', 'each'] as const
+
+/** The unit an item is effectively bought in: its unit size's, else its catalog unit. */
+export function effectiveBuyUnit(
+  item: { default_unit: string | null } | undefined,
+  setting: IngredientSetting | undefined
+): string | null {
+  if (setting?.unitSize && setting.unitSizeUnit) return setting.unitSizeUnit
+  return item?.default_unit ?? null
+}
+
+/** Base quantity (g / ml / each) of `qty` invoice units of an item. */
+export function purchasedBase(
+  qty: number,
+  defaultUnit: string | null | undefined,
+  setting: IngredientSetting | undefined
+): { base: number; kind: BaseKind } | null {
+  if (setting?.unitSize && setting.unitSizeUnit) return toBase(qty * setting.unitSize, setting.unitSizeUnit)
+  return toBase(qty, defaultUnit)
 }
 
 /**
@@ -73,20 +97,42 @@ export interface IngredientSetting {
 export async function fetchIngredientSettings(
   sb: SupabaseClient,
   restaurantId: string
-): Promise<{ settings: Map<string, IngredientSetting>; missing: boolean }> {
+): Promise<{ settings: Map<string, IngredientSetting>; missing: boolean; unitSizeMissing: boolean }> {
   const settings = new Map<string, IngredientSetting>()
-  const { data, error } = await sb
+  type Row = {
+    canonical_item_id: string
+    pack_qty: number | null
+    yield_pct: number | null
+    unit_size?: number | null
+    unit_size_unit?: string | null
+  }
+  let unitSizeMissing = false
+  let rows: Row[]
+  const full = await sb
     .from('ingredient_settings')
-    .select('canonical_item_id, pack_qty, yield_pct')
+    .select('canonical_item_id, pack_qty, yield_pct, unit_size, unit_size_unit')
     .eq('restaurant_id', restaurantId)
-  if (error) return { settings, missing: true }
-  for (const r of (data ?? []) as { canonical_item_id: string; pack_qty: number | null; yield_pct: number | null }[]) {
+  if (!full.error) {
+    rows = (full.data ?? []) as Row[]
+  } else {
+    // sql/021 not applied yet: fall back to the sql/020 columns.
+    unitSizeMissing = true
+    const basic = await sb
+      .from('ingredient_settings')
+      .select('canonical_item_id, pack_qty, yield_pct')
+      .eq('restaurant_id', restaurantId)
+    if (basic.error) return { settings, missing: true, unitSizeMissing }
+    rows = (basic.data ?? []) as Row[]
+  }
+  for (const r of rows) {
     settings.set(r.canonical_item_id, {
       packQty: r.pack_qty != null ? Number(r.pack_qty) : null,
       yieldPct: r.yield_pct != null ? Number(r.yield_pct) : 100,
+      unitSize: r.unit_size != null ? Number(r.unit_size) : null,
+      unitSizeUnit: r.unit_size_unit ?? null,
     })
   }
-  return { settings, missing: false }
+  return { settings, missing: false, unitSizeMissing }
 }
 
 /** Units bought on one invoice line, or null when it can't be counted. */
@@ -244,7 +290,7 @@ export async function fetchIngredientCosts(
       if (Number(l.case_qty ?? 0) > 0) needsPack?.add(item.name)
       continue
     }
-    const base = toBase(qty, item.default_unit)
+    const base = purchasedBase(qty, item.default_unit, setting)
     if (!base || base.base <= 0) continue
     costs.set(item.name, {
       costPerBase: l.total / base.base,

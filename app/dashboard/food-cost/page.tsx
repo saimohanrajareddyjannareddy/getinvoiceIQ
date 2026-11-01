@@ -9,8 +9,10 @@ import {
   CartesianGrid, ReferenceLine,
 } from 'recharts'
 import { POP, COAL, GRID, TICK, tooltipStyle, CURSOR } from '@/lib/chart-theme'
+import { nonFoodByHeader } from '@/lib/food-cost'
 
-// Full Food cost % page: invoice spend ÷ POS net sales.
+// Full Food cost % page: food & drink spend (invoices minus cleaning and
+// packaging supplies) ÷ POS net sales.
 // - KPIs on a trailing-30-day window (same convention as the Home card).
 // - Weekly food-cost-% trend over the trailing 12 weeks, with a 35% reference
 //   line (the industry's typical "high" threshold).
@@ -142,11 +144,15 @@ export default function FoodCostPage() {
       if (row) row.sales += (r.net_cents || 0) / 100
     }
     const headerIds30: string[] = []
-    for (const h of (spendRes.data ?? []) as { id: string; invoice_date: string; total: number | null; review_status?: string | null }[]) {
+    const approved = ((spendRes.data ?? []) as { id: string; invoice_date: string; total: number | null; review_status?: string | null }[])
       // Unapproved (needs_review) invoices don't count as spend yet.
-      if (h.review_status === 'needs_review') continue
+      .filter((h) => h.review_status !== 'needs_review')
+    // Food cost leaves out supplies (cleaning, packaging) — lib/food-cost.
+    const nonFood = await nonFoodByHeader(supabase, approved.map((h) => h.id))
+    if (stale()) return
+    for (const h of approved) {
       const row = byDay.get(h.invoice_date)
-      if (row) row.spend += h.total || 0
+      if (row) row.spend += (h.total || 0) - (nonFood.get(h.id) ?? 0)
       if (h.invoice_date >= start30) headerIds30.push(h.id)
     }
     setDays([...byDay.values()])
@@ -217,7 +223,8 @@ export default function FoodCostPage() {
     <div className="p-4 sm:p-8">
       <h1 className="font-serif text-[28px] text-ink">Food cost %</h1>
       <p className="mt-1 text-[13px] text-ink-muted">
-        Invoice spend ÷ POS net sales (gross − discounts − refunds, tax excluded).
+        Food & drink spend ÷ POS net sales (gross − discounts − refunds, tax excluded).
+        Cleaning and packaging supplies are left out.
       </p>
 
       {!hasSales ? (
