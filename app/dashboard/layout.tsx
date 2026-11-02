@@ -20,6 +20,7 @@ import {
   ClipboardCheck,
   Sparkles,
   ChefHat,
+  Scale,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useRestaurant } from '@/lib/restaurant'
@@ -43,6 +44,7 @@ const mainNav = [
   { href: '/dashboard/review', label: 'Review', icon: ClipboardCheck, badge: 'review' },
   { href: '/dashboard/food-cost', label: 'Food cost %', icon: ChartColumn },
   { href: '/dashboard/recipes', label: 'Recipes', icon: ChefHat },
+  { href: '/dashboard/pack-sizes', label: 'Pack sizes', icon: Scale },
   { href: '/dashboard/vendors', label: 'Vendors', icon: Building2 },
   { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
 ]

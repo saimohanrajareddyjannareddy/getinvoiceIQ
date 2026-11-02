@@ -17,7 +17,8 @@ Live at **[getinvoiceiq.com](https://www.getinvoiceiq.com)** · $99 per location
 | **Review queue** | Invoices whose numbers don't add up (lines ≠ subtotal, qty × price ≠ line total, missing vendor/date) wait for a human. Email and WhatsApp imports always wait. Nothing lands in the books unchecked. |
 | **Price tracker & alerts** | Unit price per item over time; alerts when a supplier price moves. |
 | **Food cost %** | Food & drink spend ÷ POS net sales (Clover), trailing 30 days and weekly trend. Cleaning and packaging supplies are excluded. |
-| **Recipes & dish costing** | AI drafts recipes from the ingredients you actually buy; you confirm. Plate cost, food cost % and margin per dish, priced from your latest invoices. Pack sizes, usable yield and "1 on invoice =" make the costs honest. |
+| **Recipes & dish costing** | AI drafts recipes from the ingredients you actually buy; you confirm. Plate cost, food cost % and margin per dish, priced from your latest invoices. Prep items (sauces, pre-fried chicken, pastes) are recipes of their own, nest up to 4 levels, and dishes use them by the ounce. Recipes can use "pack" (2 bottles of yogurt). Usable % covers trim loss. |
+| **Pack sizes** | Every product per store broken down to one scale (pounds for food and dry goods, gallons for liquids, count for countables). Set once what a case holds (24 × 16 oz, 20 × 200 g); pack sizes printed in product names are read automatically. Compares cost per pound across stores. |
 | **Theoretical vs actual usage** | What sales × recipes say you should have used vs what you bought, in dollars, with calibration hints. |
 | **Vendors, wastage, Ask** | Vendor list and spend, purchased-vs-sold by category, and an assistant that answers questions from the restaurant's own records. |
 | **Multi-restaurant & team** | One login, many locations; invite staff per restaurant. Billing per location through Stripe. |
@@ -61,7 +62,7 @@ Apply the files in `sql/` in the Supabase SQL editor, in number order. They are 
 Exceptions to plain number order:
 
 - `018_recipe_meta.sql` runs **before** `008_recipe_usage_variance.sql`.
-- `020_ingredient_settings.sql`, then `021_unit_size.sql`, run after 008. Re-run both if you re-run 008.
+- `020_ingredient_settings.sql`, `021_unit_size.sql`, `022_product_packs.sql`, then `023_recipe_packs_and_nesting.sql` run after 008, in that order. Re-run them if you re-run 008.
 
 `001_foundation.sql` builds on base tables (restaurants, user_restaurants, invoice_headers,
 invoice_lines) created by earlier setup migrations.

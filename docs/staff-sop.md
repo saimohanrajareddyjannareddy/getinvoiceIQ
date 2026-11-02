@@ -70,8 +70,10 @@ For each invoice in **Review**:
 4. **Recipes → Theoretical vs actual usage:** the biggest positive **$ impact** rows are where
    money leaks (over-portioning, waste, theft, or a wrong recipe). Pick the top one and check it
    in the kitchen this week.
-5. **Ingredient costs table:** fill in anything tagged **needs pack size**, and any
-   "1 on invoice =" that's missing (oil: 1 = 35 lb jug; cilantro: 1 = 3 oz bunch).
+5. **Pack sizes** (menu → Pack sizes): tick **Needs pack size** and fill in what one case of
+   each product holds, for example cilantro 20 × 200 g, yogurt 4 × 1 lb, Costco cornstarch
+   30 × 12 oz. Sizes printed in the product name are filled in for you; check and **Save**.
+   Every purchase then shows in pounds, so stores compare per pound.
 
 ## 5. Recipes (owner or chef, once, then when the menu changes)
 
@@ -79,9 +81,13 @@ For each invoice in **Review**:
 2. Check each ingredient and amount against how the kitchen actually makes it. Amounts are per
    plate, **after** trimming (peeled onion, trimmed chicken).
 3. Tap **Save & confirm recipe**. The plate cost, food cost % and margin then update with every new invoice.
-4. Prep items made in batches (sambar, chutneys, sauces, dough) go under **Components**. Enter the
-   batch recipe and what one batch yields.
-5. Set **Usable %** for ingredients with trim loss (whole chicken ≈ 70%, onion ≈ 90%).
+4. Prep items made in batches (N65 sauce, pre-fried chicken, gravies, ginger-garlic paste, dough)
+   go under **Components**. Enter the batch recipe and what one batch yields after cooking (10 lb raw
+   chicken → 7 lb fried). Then pick them in a dish from **Your prep items** and enter how many oz
+   the dish uses. A prep item can use another prep item.
+5. Ingredients bought in bottles or bags can be entered as **pack**: "2 pack" of yogurt = 2 bottles,
+   priced by the pound from the pack size.
+6. Set **Usable %** for ingredients with trim loss (whole chicken ≈ 70%, onion ≈ 90%).
 
 > Start with the 10 dishes that sell the most. The usage report only becomes useful once those
 > have recipes.

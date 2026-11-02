@@ -19,6 +19,7 @@ import {
   toBase,
   unitKind,
   usableCostPerBase,
+  recipeLineBase,
   effectiveBuyUnit,
   FREE_INGREDIENTS,
   RECIPE_UNITS,
@@ -33,6 +34,7 @@ import {
 } from '@/lib/recipes'
 import IngredientSettingsCard from '@/components/IngredientSettingsCard'
 import { isNonFood } from '@/lib/food-cost'
+import { fetchProductPacks } from '@/lib/packs'
 
 // Recipes & dish costing (stage 1): dishes come from POS sales,
 // the AI drafts a per-serving recipe from the restaurant's own
@@ -45,6 +47,48 @@ const money = (n: number) =>
 const card = 'rounded-[14px] border border-ink/[0.08] bg-cream-surface p-[22px]'
 
 type EditLine = { ingredient_name: string; quantity: string; unit: string }
+
+/**
+ * Ingredient picker options: what you buy, plus your prep items
+ * (components like N65 sauce or pre-fried chicken), so a dish can use
+ * them by the ounce. A current value in neither list (an AI draft's
+ * name) stays selectable instead of silently showing the first option.
+ */
+function IngredientOptions({
+  canonical,
+  prepItems,
+  current,
+  exclude,
+}: {
+  canonical: CanonicalItem[]
+  prepItems: string[]
+  current: string
+  exclude?: string | null
+}) {
+  const prep = prepItems.filter((n) => n !== exclude)
+  const known = current === '' || prep.includes(current) || canonical.some((c) => c.name === current)
+  return (
+    <>
+      {!known && <option value={current}>{current}</option>}
+      {prep.length > 0 && (
+        <optgroup label="Your prep items">
+          {prep.map((n) => (
+            <option key={`prep:${n}`} value={n}>
+              {n} (prep)
+            </option>
+          ))}
+        </optgroup>
+      )}
+      <optgroup label="Ingredients you buy">
+        {canonical.map((c) => (
+          <option key={c.id} value={c.name}>
+            {c.name}
+          </option>
+        ))}
+      </optgroup>
+    </>
+  )
+}
 
 export default function RecipesPage() {
   const { current } = useRestaurant()
@@ -70,7 +114,6 @@ export default function RecipesPage() {
 
   const [ingSettings, setIngSettings] = useState<Map<string, IngredientSetting>>(new Map())
   const [ingSettingsMissing, setIngSettingsMissing] = useState(false)
-  const [unitSizeMissing, setUnitSizeMissing] = useState(false)
   const [needsPack, setNeedsPack] = useState<Set<string>>(new Set())
   const [meta, setMeta] = useState<Map<string, RecipeMeta>>(new Map())
   const [metaMissing, setMetaMissing] = useState(false)
@@ -88,20 +131,20 @@ export default function RecipesPage() {
   const load = useCallback(async () => {
     if (!restaurantId) return
     if (!loadedOnceRef.current) setLoading(true)
-    const [canon, settingsRes] = await Promise.all([
+    const [canon, settingsRes, packRes] = await Promise.all([
       fetchCanonicalItems(supabase),
       fetchIngredientSettings(supabase, restaurantId),
+      fetchProductPacks(supabase, restaurantId),
     ])
     const packGaps = new Set<string>()
     const [dishList, recipeMap, purchaseMap, metaMap] = await Promise.all([
       fetchDishSales(supabase, restaurantId, 30),
       fetchRecipes(supabase, restaurantId),
-      fetchIngredientCosts(supabase, restaurantId, canon, settingsRes.settings, packGaps),
+      fetchIngredientCosts(supabase, restaurantId, canon, settingsRes.settings, packGaps, packRes.packs, packRes.byIngredient),
       fetchRecipeMeta(supabase, restaurantId),
     ])
     setIngSettings(settingsRes.settings)
     setIngSettingsMissing(settingsRes.missing)
-    setUnitSizeMissing(settingsRes.unitSizeMissing)
     setNeedsPack(packGaps)
     const { error: metaProbeErr } = await supabase.from('recipe_meta').select('id').limit(1)
     setMetaMissing(!!metaProbeErr)
@@ -715,8 +758,8 @@ export default function RecipesPage() {
                         </div>
                         <div className="space-y-2">
                           {editLines.map((row, i) => {
-                            const base = toBase(Number(row.quantity) || 0, row.unit)
                             const c = costs.get(row.ingredient_name)
+                            const base = recipeLineBase(Number(row.quantity) || 0, row.unit, c)
                             const usable = usableCostPerBase(c)
                             const lineCost =
                               base && usable != null && c?.baseKind === base.kind
@@ -733,11 +776,12 @@ export default function RecipesPage() {
                                   }}
                                   className="min-w-[220px] flex-1 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                                 >
-                                  {canonical.map((c) => (
-                                    <option key={c.id} value={c.name}>
-                                      {c.name}
-                                    </option>
-                                  ))}
+                                  <IngredientOptions
+                                    canonical={canonical}
+                                    prepItems={definedComponents}
+                                    current={row.ingredient_name}
+                                    exclude={editingComp}
+                                  />
                                 </select>
                                 <input
                                   value={row.quantity}
@@ -760,7 +804,7 @@ export default function RecipesPage() {
                                 >
                                   {RECIPE_UNITS.map((u) => (
                                     <option key={u} value={u}>
-                                      {u}
+                                      {u === 'pack' ? 'pack (bottle, bag)' : u}
                                     </option>
                                   ))}
                                 </select>
@@ -947,7 +991,8 @@ export default function RecipesPage() {
                             onChange={(e) => setCompYieldUnit(e.target.value)}
                             className="w-20 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                           >
-                            {RECIPE_UNITS.map((u) => (
+                            {/* A batch yields weight, volume or count — never "pack". */}
+                            {RECIPE_UNITS.filter((u) => u !== 'pack').map((u) => (
                               <option key={u} value={u}>
                                 {u}
                               </option>
@@ -963,8 +1008,8 @@ export default function RecipesPage() {
                         </div>
                         <div className="space-y-2">
                           {compLines.map((row, i) => {
-                            const base = toBase(Number(row.quantity) || 0, row.unit)
                             const c = costs.get(row.ingredient_name)
+                            const base = recipeLineBase(Number(row.quantity) || 0, row.unit, c)
                             const usable = usableCostPerBase(c)
                             const lineCost =
                               base && usable != null && c?.baseKind === base.kind
@@ -981,11 +1026,12 @@ export default function RecipesPage() {
                                   }}
                                   className="min-w-[220px] flex-1 rounded-[8px] border border-ink/15 bg-cream-surface px-2 py-1.5 text-[13px] text-ink"
                                 >
-                                  {canonical.map((c) => (
-                                    <option key={c.id} value={c.name}>
-                                      {c.name}
-                                    </option>
-                                  ))}
+                                  <IngredientOptions
+                                    canonical={canonical}
+                                    prepItems={definedComponents}
+                                    current={row.ingredient_name}
+                                    exclude={editingComp}
+                                  />
                                 </select>
                                 <input
                                   value={row.quantity}
@@ -1008,7 +1054,7 @@ export default function RecipesPage() {
                                 >
                                   {RECIPE_UNITS.map((u) => (
                                     <option key={u} value={u}>
-                                      {u}
+                                      {u === 'pack' ? 'pack (bottle, bag)' : u}
                                     </option>
                                   ))}
                                 </select>
@@ -1091,7 +1137,6 @@ export default function RecipesPage() {
           rows={settingsRows}
           settings={ingSettings}
           missing={ingSettingsMissing}
-          unitSizeMissing={unitSizeMissing}
           onSaved={load}
         />
       )}
