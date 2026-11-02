@@ -81,9 +81,13 @@ For each invoice in **Review**:
 2. Check each ingredient and amount against how the kitchen actually makes it. Amounts are per
    plate, **after** trimming (peeled onion, trimmed chicken).
 3. Tap **Save & confirm recipe**. The plate cost, food cost % and margin then update with every new invoice.
-4. Prep items made in batches (sambar, chutneys, sauces, dough) go under **Components**. Enter the
-   batch recipe and what one batch yields.
-5. Set **Usable %** for ingredients with trim loss (whole chicken ≈ 70%, onion ≈ 90%).
+4. Prep items made in batches (N65 sauce, pre-fried chicken, gravies, ginger-garlic paste, dough)
+   go under **Components**. Enter the batch recipe and what one batch yields after cooking (10 lb raw
+   chicken → 7 lb fried). Then pick them in a dish from **Your prep items** and enter how many oz
+   the dish uses. A prep item can use another prep item.
+5. Ingredients bought in bottles or bags can be entered as **pack**: "2 pack" of yogurt = 2 bottles,
+   priced by the pound from the pack size.
+6. Set **Usable %** for ingredients with trim loss (whole chicken ≈ 70%, onion ≈ 90%).
 
 > Start with the 10 dishes that sell the most. The usage report only becomes useful once those
 > have recipes.

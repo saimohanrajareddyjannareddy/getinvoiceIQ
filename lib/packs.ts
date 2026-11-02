@@ -114,19 +114,34 @@ export function toScale(base: number, kind: BaseKind): number {
 export async function fetchProductPacks(
   sb: SupabaseClient,
   restaurantId: string
-): Promise<{ packs: Map<string, ProductPack>; missing: boolean }> {
+): Promise<{
+  packs: Map<string, ProductPack>
+  /** Most recently saved pack per canonical item id ("pack" recipe unit). */
+  byIngredient: Map<string, ProductPack>
+  missing: boolean
+}> {
   const packs = new Map<string, ProductPack>()
+  const byIngredient = new Map<string, ProductPack>()
   const { data, error } = await sb
     .from('product_packs')
-    .select('vendor_key, item_key, pack_count, pack_size, pack_unit')
+    .select('vendor_key, item_key, canonical_item_id, pack_count, pack_size, pack_unit, updated_at')
     .eq('restaurant_id', restaurantId)
-  if (error) return { packs, missing: true }
-  for (const r of (data ?? []) as { vendor_key: string; item_key: string; pack_count: number; pack_size: number; pack_unit: string }[]) {
-    packs.set(`${r.vendor_key}|${r.item_key}`, {
-      packCount: Number(r.pack_count),
-      packSize: Number(r.pack_size),
-      packUnit: r.pack_unit,
-    })
+    .order('updated_at', { ascending: false })
+  if (error) return { packs, byIngredient, missing: true }
+  type Row = {
+    vendor_key: string
+    item_key: string
+    canonical_item_id: string | null
+    pack_count: number
+    pack_size: number
+    pack_unit: string
   }
-  return { packs, missing: false }
+  for (const r of (data ?? []) as Row[]) {
+    const pack = { packCount: Number(r.pack_count), packSize: Number(r.pack_size), packUnit: r.pack_unit }
+    packs.set(`${r.vendor_key}|${r.item_key}`, pack)
+    // Rows come newest first, so the first one per ingredient wins —
+    // the same rule as recipe_line_base() in sql/023.
+    if (r.canonical_item_id && !byIngredient.has(r.canonical_item_id)) byIngredient.set(r.canonical_item_id, pack)
+  }
+  return { packs, byIngredient, missing: false }
 }

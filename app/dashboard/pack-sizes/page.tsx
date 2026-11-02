@@ -230,6 +230,39 @@ export default function PackSizesPage() {
     load()
   }
 
+  // Products whose size is printed in the name ("24/16OZ") and not saved yet.
+  const suggestions = products.filter(
+    (p) => p.purchaseUnit !== 'lb' && !packs.has(p.key) && !isNonFood(p.category) && suggestPack(p.itemName)
+  )
+
+  async function saveAllSuggestions() {
+    if (!restaurantId || suggestions.length === 0) return
+    setError(null)
+    setSaving('__all__')
+    const rows = suggestions.map((p) => {
+      const hint = suggestPack(p.itemName)!
+      return {
+        restaurant_id: restaurantId,
+        vendor_key: normKey(p.vendor === 'Unknown vendor' ? '' : p.vendor),
+        item_key: normKey(p.itemName),
+        canonical_item_id: p.ingredient?.id ?? null,
+        pack_count: hint.packCount,
+        pack_size: hint.packSize,
+        pack_unit: hint.packUnit,
+        updated_at: new Date().toISOString(),
+      }
+    })
+    const { error: err } = await supabase
+      .from('product_packs')
+      .upsert(rows, { onConflict: 'restaurant_id,vendor_key,item_key' })
+    setSaving(null)
+    if (err) {
+      setError(`Couldn’t save the suggestions: ${err.message}`)
+      return
+    }
+    load()
+  }
+
   // ---- derived ----
   const ql = q.trim().toLowerCase()
   const shown = products
@@ -379,6 +412,29 @@ export default function PackSizesPage() {
               product name prints it (“24/16OZ”) it’s filled in for you; check it and save. Items sold
               by the pound need nothing.
             </p>
+            <p className="mt-2 max-w-2xl text-[13px] text-ink-muted">
+              <strong className="text-ink-2">Set it once.</strong> Every later invoice of the same product
+              from the same store converts automatically. Recipes can then use{' '}
+              <strong className="text-ink-2">pack</strong> as a unit — “2 packs of yogurt” is 2 × 1 lb,
+              priced by the pound.
+            </p>
+            {suggestions.length > 0 && !missing && (
+              <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[10px] border border-ink/10 bg-cream px-4 py-3 text-[13px] text-ink">
+                <span>
+                  <strong>{suggestions.length}</strong> product{suggestions.length === 1 ? '' : 's'} print their
+                  pack size in the name ({suggestions.slice(0, 3).map((p) => p.itemName).join(', ')}
+                  {suggestions.length > 3 ? '…' : ''}).
+                </span>
+                <button
+                  type="button"
+                  onClick={saveAllSuggestions}
+                  disabled={saving != null}
+                  className="rounded-md bg-pop px-3 py-1 text-[12.5px] font-semibold text-white disabled:opacity-30"
+                >
+                  {saving === '__all__' ? 'Saving…' : `Save all ${suggestions.length}`}
+                </button>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <input
                 type="search"
@@ -468,7 +524,8 @@ export default function PackSizesPage() {
                               </select>
                               <div className="mt-1 text-[11.5px] text-ink-muted">
                                 {preview
-                                  ? `= ${qtyFmt(toScale(preview.base, preview.kind))} ${scaleUnit(preview.kind)} per ${unitWord}`
+                                  ? `= ${qtyFmt(toScale(preview.base, preview.kind))} ${scaleUnit(preview.kind)} per ${unitWord}` +
+                                    (Number(d.count) > 1 ? ` · 1 pack = ${d.size} ${UNIT_LABELS[d.unit] ?? d.unit}` : '')
                                   : !saved && suggestPack(p.itemName) == null
                                     ? 'not set'
                                     : ''}

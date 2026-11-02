@@ -46,6 +46,29 @@ export interface IngredientCost {
   baseKind: BaseKind | null
   /** Usable share after trim / peel loss, 1–100. Missing = 100. */
   yieldPct?: number
+  /**
+   * One inner pack (a 1 lb yogurt bottle, a 16 oz cornstarch bag) in
+   * base units — what a recipe line in the unit "pack" means. From the
+   * ingredient's most recently saved product pack (sql/022, 023).
+   */
+  packBase?: { base: number; kind: BaseKind } | null
+}
+
+/**
+ * Base quantity of one recipe line. "pack" lines (2 bottles of yogurt)
+ * convert through the ingredient's pack size; everything else through
+ * the unit table.
+ */
+export function recipeLineBase(
+  qty: number,
+  unit: string | null | undefined,
+  cost: IngredientCost | undefined
+): { base: number; kind: BaseKind } | null {
+  if ((unit ?? '').trim().toLowerCase() === 'pack') {
+    const p = cost?.packBase
+    return p && p.base > 0 ? { base: qty * p.base, kind: p.kind } : null
+  }
+  return toBase(qty, unit)
 }
 
 /**
@@ -176,7 +199,7 @@ export function toBase(
   return null
 }
 
-export const RECIPE_UNITS = ['oz', 'lb', 'each', 'floz', 'g'] as const
+export const RECIPE_UNITS = ['oz', 'lb', 'each', 'floz', 'g', 'pack'] as const
 
 export async function fetchDishSales(
   sb: SupabaseClient,
@@ -251,7 +274,9 @@ export async function fetchIngredientCosts(
   /** Filled with names whose newest purchases are by the case with no pack size. */
   needsPack?: Set<string>,
   /** Store product packs keyed by packKey(vendor, item_name) — sql/022. */
-  productPacks: Map<string, ProductPack> = new Map()
+  productPacks: Map<string, ProductPack> = new Map(),
+  /** Latest saved product pack per canonical item id, for "pack" recipe lines. */
+  ingredientPacks: Map<string, ProductPack> = new Map()
 ): Promise<Map<string, IngredientCost>> {
   const costs = new Map<string, IngredientCost>()
   const byId = new Map(canonical.map((c) => [c.id, c]))
@@ -303,10 +328,13 @@ export async function fetchIngredientCosts(
       base = purchasedBase(qty, item.default_unit, setting)
     }
     if (!base || base.base <= 0) continue
+    const ip = ingredientPacks.get(item.id)
+    const one = ip ? toBase(ip.packSize, ip.packUnit) : null
     costs.set(item.name, {
       costPerBase: l.total / base.base,
       baseKind: base.kind,
       yieldPct: setting?.yieldPct ?? 100,
+      packBase: one && one.kind === base.kind ? one : null,
     })
   }
   // An item priced from an older unit purchase no longer needs asking.
@@ -374,7 +402,7 @@ export function mergeComponentCosts(
     visiting.add(name)
     let total = 0
     for (const line of lines) {
-      const base = toBase(line.quantity, line.unit)
+      const base = recipeLineBase(line.quantity, line.unit, purchaseCosts.get(line.ingredient_name))
       if (!base) {
         visiting.delete(name)
         memo.set(name, null)
@@ -472,8 +500,8 @@ export function plateCost(
   let total = 0
   const missing: string[] = []
   for (const line of lines) {
-    const base = toBase(line.quantity, line.unit)
     const cost = costs.get(line.ingredient_name)
+    const base = recipeLineBase(line.quantity, line.unit, cost)
     const usable = usableCostPerBase(cost)
     if (!cost && FREE_INGREDIENTS.has(line.ingredient_name.trim().toLowerCase())) continue
     if (!base || !cost || usable == null || cost.baseKind !== base.kind) {
