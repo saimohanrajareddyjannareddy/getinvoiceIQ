@@ -70,8 +70,10 @@ For each invoice in **Review**:
 4. **Recipes → Theoretical vs actual usage:** the biggest positive **$ impact** rows are where
    money leaks (over-portioning, waste, theft, or a wrong recipe). Pick the top one and check it
    in the kitchen this week.
-5. **Ingredient costs table:** fill in anything tagged **needs pack size**, and any
-   "1 on invoice =" that's missing (oil: 1 = 35 lb jug; cilantro: 1 = 3 oz bunch).
+5. **Pack sizes** (menu → Pack sizes): tick **Needs pack size** and fill in what one case of
+   each product holds, for example cilantro 20 × 200 g, yogurt 4 × 1 lb, Costco cornstarch
+   30 × 12 oz. Sizes printed in the product name are filled in for you; check and **Save**.
+   Every purchase then shows in pounds, so stores compare per pound.
 
 ## 5. Recipes (owner or chef, once, then when the menu changes)
 

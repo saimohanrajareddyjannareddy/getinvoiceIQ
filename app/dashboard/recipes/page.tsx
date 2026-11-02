@@ -33,6 +33,7 @@ import {
 } from '@/lib/recipes'
 import IngredientSettingsCard from '@/components/IngredientSettingsCard'
 import { isNonFood } from '@/lib/food-cost'
+import { fetchProductPacks } from '@/lib/packs'
 
 // Recipes & dish costing (stage 1): dishes come from POS sales,
 // the AI drafts a per-serving recipe from the restaurant's own
@@ -88,15 +89,16 @@ export default function RecipesPage() {
   const load = useCallback(async () => {
     if (!restaurantId) return
     if (!loadedOnceRef.current) setLoading(true)
-    const [canon, settingsRes] = await Promise.all([
+    const [canon, settingsRes, packRes] = await Promise.all([
       fetchCanonicalItems(supabase),
       fetchIngredientSettings(supabase, restaurantId),
+      fetchProductPacks(supabase, restaurantId),
     ])
     const packGaps = new Set<string>()
     const [dishList, recipeMap, purchaseMap, metaMap] = await Promise.all([
       fetchDishSales(supabase, restaurantId, 30),
       fetchRecipes(supabase, restaurantId),
-      fetchIngredientCosts(supabase, restaurantId, canon, settingsRes.settings, packGaps),
+      fetchIngredientCosts(supabase, restaurantId, canon, settingsRes.settings, packGaps, packRes.packs),
       fetchRecipeMeta(supabase, restaurantId),
     ])
     setIngSettings(settingsRes.settings)
